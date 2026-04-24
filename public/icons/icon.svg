@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#0A1628"/>
+  <!-- Fishing rod -->
+  <line x1="120" y1="100" x2="320" y2="220" stroke="#00E5C8" stroke-width="14" stroke-linecap="round"/>
+  <!-- Line from rod tip -->
+  <line x1="320" y1="220" x2="340" y2="320" stroke="#00E5C8" stroke-width="5" stroke-linecap="round"/>
+  <!-- Hook body -->
+  <path d="M340 320 Q380 330 380 370 Q380 420 330 420" stroke="#00E5C8" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <!-- Hook barb -->
+  <line x1="330" y1="420" x2="355" y2="405" stroke="#00E5C8" stroke-width="10" stroke-linecap="round"/>
+  <!-- Water ripple circles -->
+  <circle cx="280" cy="370" r="30" stroke="#00E5C8" stroke-width="4" fill="none" opacity="0.4"/>
+  <circle cx="280" cy="370" r="55" stroke="#00E5C8" stroke-width="3" fill="none" opacity="0.2"/>
+  <!-- Rod handle grip marks -->
+  <line x1="128" y1="107" x2="148" y2="119" stroke="#0A1628" stroke-width="6" stroke-linecap="round"/>
+  <line x1="144" y1="116" x2="164" y2="128" stroke="#0A1628" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -40,7 +40,7 @@ export function AdminLayout() {
             <span className="text-2xl">🎣</span>
             <div>
               <p className="font-extrabold text-admin-text text-sm leading-tight tracking-tight">
-                CastLog
+                Pyes Perchers
               </p>
               <p className="text-admin-teal text-[10px] font-bold uppercase tracking-[0.08em]">
                 Admin

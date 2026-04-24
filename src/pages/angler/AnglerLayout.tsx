@@ -66,7 +66,7 @@ export function AnglerLayout() {
               <span className="text-2xl">📲</span>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-angler-text text-sm leading-tight">
-                  Add CastLog to your home screen?
+                  Add Pyes Perchers to your home screen?
                 </p>
                 <p className="text-angler-text2 text-xs mt-0.5">Quick access, works offline</p>
               </div>

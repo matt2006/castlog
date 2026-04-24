@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.svg', 'icons/*.png'],
       manifest: {
-        name: 'CastLog',
-        short_name: 'CastLog',
-        description: 'Track catches. Run competitions. Reel in glory.',
+        name: 'Pyes Perchers',
+        short_name: 'Perchers',
+        description: 'Pyes Perchers fishing club — log catches, run competitions.',
         theme_color: '#0A1628',
         background_color: '#0A1628',
         display: 'standalone',

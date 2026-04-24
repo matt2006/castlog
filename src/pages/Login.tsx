@@ -11,10 +11,11 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Keep auth loading on admin-dark to prevent flash-of-white before redirect.
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-angler-bg flex items-center justify-center" data-theme="angler">
-        <div className="w-10 h-10 border-2 border-angler-teal border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-admin-bg flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-admin-teal border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -29,9 +30,7 @@ export function Login() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
-
     if (authError) {
       setError(authError.message)
       setLoading(false)
@@ -41,7 +40,7 @@ export function Login() {
   return (
     <div
       data-theme="angler"
-      className="min-h-screen bg-angler-bg text-angler-text flex flex-col items-center justify-center px-5 py-10 font-sans"
+      className="min-h-screen bg-angler-white text-angler-text flex flex-col items-center justify-center px-5 py-10 font-sans"
     >
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -59,8 +58,8 @@ export function Login() {
           />
         </div>
 
-        {/* Form card */}
-        <div className="bg-angler-white rounded-[20px] shadow-card-light p-6 flex flex-col gap-4">
+        {/* Form card — angler-bg sits just off pure white, giving clear elevation */}
+        <div className="bg-angler-bg rounded-[20px] shadow-card-light p-6 flex flex-col gap-4">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
@@ -73,7 +72,7 @@ export function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="angler@example.com"
-                className="w-full bg-angler-bg border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                className="w-full bg-angler-bg2 border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
               />
             </div>
 
@@ -88,7 +87,7 @@ export function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-angler-bg border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                className="w-full bg-angler-bg2 border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
               />
             </div>
 
@@ -98,7 +97,7 @@ export function Login() {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-red-500 text-[13px] text-center"
+                  className="text-red-600 text-[13px] text-center"
                 >
                   {error}
                 </motion.p>

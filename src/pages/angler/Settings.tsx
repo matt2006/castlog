@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { supabase, generateTempPassword } from '@/lib/supabase'
 import { useStore } from '@/store/useStore'
 import { ACHIEVEMENTS, ACHIEVEMENT_MAP } from '@/lib/achievements'
+import { SPECIES } from '@/lib/species'
 import { CatchDetailModal } from '@/components/shared/CatchDetailModal'
 import type { AchievementEarned, Catch, Competition, Profile, Venue } from '@/types'
 
@@ -828,7 +829,7 @@ function AchievementsSection({ showToast }: { showToast: ShowToast }) {
   const [earned, setEarned] = useState<EarnedRow[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
-  const [anglerSearch, setAnglerSearch] = useState('')
+  const [anglerFilter, setAnglerFilter] = useState('')
   const [achievementFilter, setAchievementFilter] = useState('')
   const [revokeTarget, setRevokeTarget] = useState<EarnedRow | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -857,10 +858,10 @@ function AchievementsSection({ showToast }: { showToast: ShowToast }) {
   }, [grantAngler])
 
   const filteredEarned = useMemo(() => earned.filter((r) => {
-    if (anglerSearch && !r.profiles?.username.toLowerCase().includes(anglerSearch.toLowerCase())) return false
+    if (anglerFilter && r.angler_id !== anglerFilter) return false
     if (achievementFilter && r.achievement_id !== achievementFilter) return false
     return true
-  }), [earned, anglerSearch, achievementFilter])
+  }), [earned, anglerFilter, achievementFilter])
 
   async function handleRevoke(row: EarnedRow) {
     setActionLoading(true)
@@ -908,7 +909,12 @@ function AchievementsSection({ showToast }: { showToast: ShowToast }) {
       {tab === 'earned' && (
         <>
           <div className="flex gap-2">
-            <input type="text" className={`${INPUT} flex-1`} placeholder="Search angler…" value={anglerSearch} onChange={(e) => setAnglerSearch(e.target.value)} />
+            <select className={`${INPUT} flex-1`} value={anglerFilter} onChange={(e) => setAnglerFilter(e.target.value)}>
+              <option value="">All anglers</option>
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>{p.avatar_emoji} {p.username}</option>
+              ))}
+            </select>
             <select className={`${INPUT} flex-1`} value={achievementFilter} onChange={(e) => setAchievementFilter(e.target.value)}>
               <option value="">All</option>
               {ACHIEVEMENTS.map((a) => <option key={a.id} value={a.id}>{a.icon} {a.name}</option>)}
@@ -1062,7 +1068,10 @@ function CatchesSection({ showToast }: { showToast: ShowToast }) {
   )
 
   const filtered = useMemo(() => catches.filter((c) => {
-    if (speciesFilter && !c.species.toLowerCase().includes(speciesFilter.toLowerCase())) return false
+    if (speciesFilter === '__other__') {
+      const knownNames = new Set(SPECIES.map((s) => s.name))
+      if (knownNames.has(c.species)) return false
+    } else if (speciesFilter && c.species !== speciesFilter) return false
     if (anglerFilter && c.angler_id !== anglerFilter) return false
     if (competitionFilter) {
       if (competitionFilter === '__none__' && c.competition_id !== null) return false
@@ -1112,7 +1121,25 @@ function CatchesSection({ showToast }: { showToast: ShowToast }) {
       {/* Filter bar */}
       <div className="space-y-2">
         <div className="flex gap-2">
-          <input type="text" className={`${INPUT} flex-1`} placeholder="Species…" value={speciesFilter} onChange={(e) => setSpeciesFilter(e.target.value)} />
+          <select className={`${INPUT} flex-1`} value={speciesFilter} onChange={(e) => setSpeciesFilter(e.target.value)}>
+            <option value="">All species</option>
+            <optgroup label="Coarse">
+              {SPECIES.filter((s) => s.category === 'coarse').map((s) => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Game">
+              {SPECIES.filter((s) => s.category === 'game').map((s) => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Sea">
+              {SPECIES.filter((s) => s.category === 'sea').map((s) => (
+                <option key={s.name} value={s.name}>{s.name}</option>
+              ))}
+            </optgroup>
+            <option value="__other__">Other (custom species)</option>
+          </select>
           <select className={`${INPUT} flex-1`} value={anglerFilter} onChange={(e) => setAnglerFilter(e.target.value)}>
             <option value="">All Anglers</option>
             {uniqueAnglers.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
@@ -1129,9 +1156,15 @@ function CatchesSection({ showToast }: { showToast: ShowToast }) {
             {storeVenues.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
           </select>
         </div>
-        <div className="flex gap-2">
-          <input type="date" className={`${INPUT} flex-1`} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="From" />
-          <input type="date" className={`${INPUT} flex-1`} value={dateTo} onChange={(e) => setDateTo(e.target.value)} title="To" />
+        <div className="flex gap-2 items-end">
+          <div className="flex-1">
+            <label className={LABEL}>From</label>
+            <input type="date" className={INPUT} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} placeholder="dd/mm/yyyy" />
+          </div>
+          <div className="flex-1">
+            <label className={LABEL}>To</label>
+            <input type="date" className={INPUT} value={dateTo} onChange={(e) => setDateTo(e.target.value)} placeholder="dd/mm/yyyy" />
+          </div>
           {hasFilters && (
             <button onClick={() => { setSpeciesFilter(''); setAnglerFilter(''); setCompetitionFilter(''); setVenueFilter(''); setDateFrom(''); setDateTo('') }} className="h-12 px-3 bg-angler-bg2 border border-angler-border rounded-[12px] text-angler-text2 font-semibold text-[13px] flex-shrink-0 min-h-[44px]">
               Clear

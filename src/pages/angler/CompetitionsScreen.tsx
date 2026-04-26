@@ -137,7 +137,7 @@ export function CompetitionsScreen() {
         <div className="flex gap-2">
           <input
             type="text"
-            className="flex-1 bg-angler-bg2 border border-angler-border rounded-[12px] px-4 py-3 text-[15px] font-mono lowercase tracking-widest text-center text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+            className="flex-1 bg-angler-bg2 border border-angler-border rounded-[12px] px-4 py-3 text-[16px] font-mono lowercase tracking-widest text-center text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
             placeholder="abc123"
             maxLength={6}
             value={joinCode}

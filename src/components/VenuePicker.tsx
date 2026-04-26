@@ -31,7 +31,7 @@ export function VenuePicker({ venues, value, onChange, theme = 'angler' }: Props
   const isAdmin = theme === 'admin'
   const inputCls = isAdmin
     ? 'w-full bg-admin-bg3 border border-admin-border rounded-[10px] px-3 py-2 text-[13px] text-admin-text placeholder-admin-text3 focus:outline-none focus:border-admin-teal transition-colors min-h-[44px]'
-    : 'w-full bg-angler-white border border-angler-border rounded-[12px] px-3 py-2 text-[13px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]'
+    : 'w-full bg-angler-white border border-angler-border rounded-[12px] px-3 py-2 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]'
   const dropdownCls = isAdmin
     ? 'absolute z-50 top-full mt-1 left-0 right-0 bg-admin-bg2 border border-admin-border rounded-[12px] shadow-lg overflow-hidden max-h-52 overflow-y-auto'
     : 'absolute z-50 top-full mt-1 left-0 right-0 bg-angler-white border border-angler-border rounded-[12px] shadow-elevated-light overflow-hidden max-h-52 overflow-y-auto'

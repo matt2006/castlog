@@ -430,7 +430,7 @@ export function LogCatch() {
                         </span>
                         <input
                           type="text"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] pl-9 pr-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                          className="w-full bg-angler-white border border-angler-border rounded-[12px] pl-9 pr-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
                           placeholder="Search species…"
                           value={speciesSearch}
                           onChange={(e) => setSpeciesSearch(e.target.value)}
@@ -500,7 +500,7 @@ export function LogCatch() {
                         <>
                           <input
                             type="text"
-                            className="w-full mt-2 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                            className="w-full mt-2 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
                             placeholder="Enter species name…"
                             autoFocus
                             value={formData.customSpecies}
@@ -551,7 +551,7 @@ export function LogCatch() {
                         <input
                           type="number"
                           inputMode="decimal"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[15px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
                           placeholder="0.000"
                           step="0.001"
                           min="0"
@@ -568,7 +568,7 @@ export function LogCatch() {
                         <input
                           type="number"
                           inputMode="decimal"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[15px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
                           placeholder="e.g. 45.5"
                           step="0.1"
                           min="0"
@@ -659,7 +659,7 @@ export function LogCatch() {
                         {locationMode === 'text' && (
                           <input
                             type="text"
-                            className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+                            className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
                             placeholder="e.g. River Wye, Hereford"
                             value={formData.locationName}
                             onChange={(e) => update({ locationName: e.target.value })}

@@ -328,7 +328,7 @@ export function Home() {
           value={speciesSearch}
           onChange={(e) => setSpeciesSearch(e.target.value)}
           placeholder="Search species…"
-          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors mb-3 min-h-[44px]"
+          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors mb-3 min-h-[44px]"
         />
 
         {/* List */}

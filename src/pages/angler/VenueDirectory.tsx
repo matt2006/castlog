@@ -95,7 +95,7 @@ export function VenueDirectory() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search venues…"
-          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
         />
 
         {filtered.length === 0 ? (

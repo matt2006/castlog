@@ -63,7 +63,7 @@ export function SpeciesGuide() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search species…"
-          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[14px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
+          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
         />
 
         <div className="flex gap-2 overflow-x-auto -mx-5 px-5 scrollbar-hide">
@@ -138,7 +138,7 @@ export function SpeciesGuide() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center sm:justify-center"
+            className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center sm:justify-center"
             onClick={() => setSelected(null)}
           >
             <motion.div
@@ -147,7 +147,7 @@ export function SpeciesGuide() {
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md p-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)] relative max-h-[90vh] overflow-y-auto"
+              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md p-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)] relative h-[85vh] overflow-y-auto"
             >
               <button
                 onClick={() => setSelected(null)}

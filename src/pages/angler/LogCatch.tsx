@@ -398,7 +398,7 @@ export function LogCatch() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40 z-50"
-            onClick={submitting ? undefined : close}
+            onClick={submitting || step === 4 ? undefined : close}
           >
             <motion.div
               key="sheet"

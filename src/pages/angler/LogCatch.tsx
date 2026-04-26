@@ -344,7 +344,7 @@ export function LogCatch() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40 z-50"
-            onClick={close}
+            onClick={submitting ? undefined : close}
           >
             <motion.div
               key="sheet"
@@ -372,7 +372,8 @@ export function LogCatch() {
                 <button
                   onClick={close}
                   aria-label="Close"
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-angler-text2 hover:bg-angler-bg2 transition-colors"
+                  disabled={submitting}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-angler-text2 hover:bg-angler-bg2 transition-colors disabled:opacity-0"
                 >
                   ✕
                 </button>

@@ -98,14 +98,17 @@ export function LogCatch() {
   const update = (patch: Partial<FormData>) =>
     setFormData((prev) => ({ ...prev, ...patch }))
 
-  // Lock body scroll while sheet is mounted
+  // Lock body scroll while sheet is open. Scoped to isOpen so the cleanup
+  // runs the moment close() sets isOpen=false — not just on component unmount.
+  // Previously this was [], which meant the lock survived a hung exit animation.
   useEffect(() => {
+    if (!isOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = prev
     }
-  }, [])
+  }, [isOpen])
 
   // ── DIAGNOSTIC: watch step changes ──────────────────────────────────────
   useEffect(() => {
@@ -135,19 +138,23 @@ export function LogCatch() {
   }, [])
 
   const close = () => {
-    console.trace('[LogCatch] close_called — isOpen:', isOpen, 'step:', stepRef.current, 'submitting (via ref below)')
+    console.trace('[LogCatch] close_called — isOpen:', isOpen, 'step:', stepRef.current)
     setIsOpen(false)
-  }
-
-  const onSheetClosed = () => {
-    console.log('[LogCatch] onSheetClosed — location.key:', location.key, 'navigating', location.key === 'default' ? 'to /' : 'back')
-    // Deep-link to /log (no in-app history) → fall back to Home.
-    // Otherwise navigate back to wherever we came from.
+    // Navigate immediately — do NOT wait for onExitComplete.
+    // The sheet exit spring was never reliably calling onExitComplete on mobile
+    // (post-submit frame drops cause the spring completion signal to stall,
+    // leaving the backdrop mounted at z-50 opacity:0 blocking all taps forever).
     if (location.key === 'default') {
       navigate('/', { replace: true })
     } else {
       navigate(-1)
     }
+  }
+
+  // onSheetClosed kept as a no-op log so we can confirm whether AnimatePresence
+  // onExitComplete ever fires (diagnostic only — navigation no longer depends on it).
+  const onSheetClosed = () => {
+    console.log('[LogCatch] onSheetClosed (onExitComplete) fired — navigation already done by close()')
   }
 
   const filteredSpecies = useMemo(() => {
@@ -404,9 +411,8 @@ export function LogCatch() {
               key="sheet"
               data-theme="angler"
               initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 280, damping: 32, mass: 0.9 }}
+              animate={{ y: 0, transition: { type: 'spring', stiffness: 280, damping: 32, mass: 0.9 } }}
+              exit={{ y: '100%', transition: { duration: 0.25, ease: [0.32, 0, 0.67, 0] } }}
               onClick={(e) => e.stopPropagation()}
               className="absolute left-0 right-0 bottom-0 bg-angler-bg rounded-t-[24px] shadow-sheet max-h-[92vh] flex flex-col font-sans"
             >

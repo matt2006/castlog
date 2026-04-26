@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SPECIES } from '@/lib/species'
@@ -19,6 +19,15 @@ export function SpeciesGuide() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<CategoryFilter>('All')
   const [selected, setSelected] = useState<Species | null>(null)
+
+  // Lock body scroll while the detail sheet is open
+  useEffect(() => {
+    if (!selected) return
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [selected])
 
   const caughtCounts = useMemo(() => {
     const map: Record<string, number> = {}
@@ -147,7 +156,7 @@ export function SpeciesGuide() {
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md p-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)] relative h-[85vh] overflow-y-auto"
+              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md p-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)] relative h-[85vh] overflow-y-auto overscroll-contain"
             >
               <button
                 onClick={() => setSelected(null)}

@@ -35,6 +35,15 @@ export function VenueDirectory() {
     return map
   }, [catches])
 
+  // Lock body scroll while the detail sheet is open
+  useEffect(() => {
+    if (!selected) return
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [selected])
+
   // Fetch all catches at the selected venue when it opens
   useEffect(() => {
     if (!selected) return
@@ -207,7 +216,7 @@ export function VenueDirectory() {
               </div>
 
               {/* Scrollable tab content */}
-              <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)]">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)]">
                 {tab === 'about' && (
                   <AboutTab
                     venue={selected}

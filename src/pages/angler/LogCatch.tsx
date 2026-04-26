@@ -408,7 +408,7 @@ export function LogCatch() {
               )}
 
               {/* Body */}
-              <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)]">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)]">
                 {/* Steps 1–3 use mode="wait" so slides feel snappy between pages.
                     Step 4 (success) is rendered OUTSIDE AnimatePresence so it appears
                     immediately — no 220 ms exit-wait gap that would leave the backdrop

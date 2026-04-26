@@ -23,6 +23,12 @@ export default {
           'purple-l': 'oklch(0.58 0.18 290 / 0.12)',
           green: 'oklch(0.58 0.17 145)',
           bronze: '#cd7f32',
+          // Forest-green family — new primary action colour (R1).
+          // Coexists with teal during R2-R3 migration; teal preserved for avatar/brand use.
+          forest: 'oklch(0.38 0.13 145 / <alpha-value>)',
+          'forest-l': 'oklch(0.94 0.05 148)',
+          'forest-m': 'oklch(0.86 0.08 145)',
+          'fish-bg': 'oklch(0.92 0.01 220)',
         },
       },
       fontFamily: {

@@ -189,7 +189,7 @@ export function Home() {
 
   return (
     <div className="px-5 pt-[calc(env(safe-area-inset-top,0)+1.25rem)] pb-5 space-y-6">
-      {/* Header card */}
+{/* Header card */}
       <div className="bg-angler-white rounded-[18px] shadow-card-light px-4 py-3.5 flex items-center gap-3">
         <div className="w-[46px] h-[46px] rounded-full bg-angler-teal-l flex items-center justify-center text-[24px] leading-none shrink-0">
           🎣

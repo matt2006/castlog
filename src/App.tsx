@@ -17,6 +17,8 @@ import { AdminUsers } from '@/pages/admin/AdminUsers'
 import { AdminCompetitions } from '@/pages/admin/AdminCompetitions'
 import { AdminCatches } from '@/pages/admin/AdminCatches'
 import { AdminAchievements } from '@/pages/admin/AdminAchievements'
+import { AdminVenues } from '@/pages/admin/AdminVenues'
+import { VenueDirectory } from '@/pages/angler/VenueDirectory'
 
 export default function App() {
   return (
@@ -35,6 +37,7 @@ export default function App() {
           <Route path="/achievements" element={<AchievementsScreen />} />
           <Route path="/species" element={<SpeciesGuide />} />
           <Route path="/map" element={<CatchMap />} />
+          <Route path="/venues" element={<VenueDirectory />} />
         </Route>
       </Route>
 
@@ -46,6 +49,7 @@ export default function App() {
           <Route path="competitions" element={<AdminCompetitions />} />
           <Route path="catches" element={<AdminCatches />} />
           <Route path="achievements" element={<AdminAchievements />} />
+          <Route path="venues" element={<AdminVenues />} />
         </Route>
       </Route>
 

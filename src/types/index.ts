@@ -19,6 +19,16 @@ export interface WeatherSnapshot {
   description: string
 }
 
+export interface Venue {
+  id: string
+  name: string
+  location_text: string | null
+  size_description: string | null
+  fish_types: string | null
+  notes: string | null
+  created_at: string
+}
+
 export interface Catch {
   id: string
   angler_id: string
@@ -32,12 +42,14 @@ export interface Catch {
   photo_url: string | null
   weather_snapshot: WeatherSnapshot | null
   competition_id: string | null
+  venue_id: string | null
   timestamp: string
   profiles?: {
     username: string
     avatar_emoji: string
     avatar_color: string
   }
+  venue?: Venue
 }
 
 export interface Competition {
@@ -50,6 +62,8 @@ export interface Competition {
   end_time: string | null
   status: 'upcoming' | 'live' | 'ended'
   created_at: string
+  venue_id: string | null
+  venue?: Venue
 }
 
 export interface CompetitionMember {
@@ -102,6 +116,7 @@ export interface OfflineCatch {
     photo_url: string | null
     weather_snapshot: WeatherSnapshot | null
     competition_id: string | null
+    venue_id: string | null
   }
   // Base64 data URL of the (already compressed) photo, stashed when the user is
   // offline so that replayOfflineQueue can upload it on reconnect.

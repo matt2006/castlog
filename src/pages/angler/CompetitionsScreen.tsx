@@ -220,6 +220,9 @@ export function CompetitionsScreen() {
                       {comp.end_time && (
                         <span>→ {format(new Date(comp.end_time), 'dd MMM HH:mm')}</span>
                       )}
+                      {comp.venue && (
+                        <span>📍 {comp.venue.name}</span>
+                      )}
                     </div>
                   </div>
                   <button

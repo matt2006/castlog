@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 import { useStore } from '@/store/useStore'
+import { VenuePicker } from '@/components/VenuePicker'
 import type { Competition, Profile } from '@/types'
 
 interface MemberEntry {
@@ -22,6 +23,7 @@ interface CreateForm {
   description: string
   start_time: string
   end_time: string
+  venue_id: string | null
 }
 
 interface ConfirmRemoveState {
@@ -70,7 +72,9 @@ export function AdminCompetitions() {
     description: '',
     start_time: '',
     end_time: '',
+    venue_id: null,
   })
+  const venues = useStore((s) => s.venues)
   const [createLoading, setCreateLoading] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
@@ -123,7 +127,7 @@ export function AdminCompetitions() {
   async function loadCompetitions() {
     setLoading(true)
     const [compsRes, membersRes] = await Promise.all([
-      supabase.from('competitions').select('*').order('created_at', { ascending: false }),
+      supabase.from('competitions').select('*, venue:venues(*)').order('created_at', { ascending: false }),
       supabase.from('competition_members').select('competition_id'),
     ])
     if (compsRes.data) setCompetitions(compsRes.data as Competition[])
@@ -178,6 +182,7 @@ export function AdminCompetitions() {
           description: comp.description ?? '',
           start_time: comp.start_time,
           end_time: comp.end_time ?? '',
+          venue_id: comp.venue_id ?? null,
         },
       }))
     }
@@ -198,8 +203,9 @@ export function AdminCompetitions() {
         end_time: createForm.end_time || null,
         status: 'upcoming',
         created_by: session.user.id,
+        venue_id: createForm.venue_id,
       })
-      .select()
+      .select('*, venue:venues(*)')
       .single()
 
     if (error) {
@@ -211,7 +217,7 @@ export function AdminCompetitions() {
     if (data) setCompetitions((prev) => [data as Competition, ...prev])
     setCreateLoading(false)
     setShowCreateDrawer(false)
-    setCreateForm({ name: '', description: '', start_time: '', end_time: '' })
+    setCreateForm({ name: '', description: '', start_time: '', end_time: '', venue_id: null })
   }
 
   async function handleEditSave(compId: string) {
@@ -226,9 +232,10 @@ export function AdminCompetitions() {
         description: form.description || null,
         start_time: form.start_time,
         end_time: form.end_time || null,
+        venue_id: form.venue_id ?? null,
       })
       .eq('id', compId)
-      .select()
+      .select('*, venue:venues(*)')
       .single()
 
     if (!error && data) {
@@ -432,6 +439,9 @@ export function AdminCompetitions() {
                         {format(new Date(comp.start_time), 'dd MMM yyyy')}
                         {comp.end_time && ` → ${format(new Date(comp.end_time), 'dd MMM yyyy')}`}
                       </span>
+                      {comp.venue && (
+                        <span className="text-admin-text2">📍 {comp.venue.name}</span>
+                      )}
                       <span className="inline-flex items-center gap-1">
                         👥 <span className="text-admin-text2 tabular-nums">{memberCount}</span>
                         <span className="sr-only"> members</span>
@@ -526,6 +536,19 @@ export function AdminCompetitions() {
                                   }
                                 />
                               </div>
+                            </div>
+                            <div>
+                              <VenuePicker
+                                venues={venues}
+                                value={form.venue_id ?? null}
+                                onChange={(venueId) =>
+                                  setEditForms((prev) => ({
+                                    ...prev,
+                                    [comp.id]: { ...prev[comp.id], venue_id: venueId },
+                                  }))
+                                }
+                                theme="admin"
+                              />
                             </div>
                             <button
                               onClick={() => handleEditSave(comp.id)}
@@ -723,6 +746,16 @@ export function AdminCompetitions() {
                       onChange={(e) =>
                         setCreateForm((f) => ({ ...f, end_time: e.target.value }))
                       }
+                    />
+                  </div>
+                  <div>
+                    <VenuePicker
+                      venues={venues}
+                      value={createForm.venue_id}
+                      onChange={(venueId) =>
+                        setCreateForm((f) => ({ ...f, venue_id: venueId }))
+                      }
+                      theme="admin"
                     />
                   </div>
 

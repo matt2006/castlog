@@ -13,6 +13,7 @@ import { useStore } from '@/store/useStore'
 import { checkNewAchievements } from '@/lib/achievements'
 import { getSpeciesEmoji, searchSpecies } from '@/lib/species'
 import { queueOfflineCatch } from '@/lib/offline'
+import { VenuePicker } from '@/components/VenuePicker'
 import type { Catch, WeatherSnapshot } from '@/types'
 
 type Step = 1 | 2 | 3 | 4
@@ -35,6 +36,7 @@ interface FormData {
   photoFile: File | null
   photoPreview: string | null
   competitionId: string | null
+  venueId: string | null
 }
 
 interface AchievementToast {
@@ -58,6 +60,7 @@ const INITIAL_FORM: FormData = {
   photoFile: null,
   photoPreview: null,
   competitionId: null,
+  venueId: null,
 }
 
 export function LogCatch() {
@@ -67,6 +70,7 @@ export function LogCatch() {
   const catches = useStore((s) => s.catches)
   const competitions = useStore((s) => s.competitions)
   const earnedAchievements = useStore((s) => s.earnedAchievements)
+  const venues = useStore((s) => s.venues)
   const isOnline = useStore((s) => s.isOnline)
   const addCatch = useStore((s) => s.addCatch)
   const addEarnedAchievement = useStore((s) => s.addEarnedAchievement)
@@ -207,6 +211,7 @@ export function LogCatch() {
         photo_url: photoUrl,
         weather_snapshot: formData.weather,
         competition_id: formData.competitionId,
+        venue_id: formData.venueId,
       }
 
       const prevPB = catches.length > 0 ? Math.max(...catches.map((c) => c.weight_kg)) : 0
@@ -320,6 +325,7 @@ export function LogCatch() {
     setCategoryFilter('All')
     setGpsObtained(false)
     setLocationMode(null)
+    setGpsError('')
     setNewCatch(null)
     setIsPB(false)
     setAssignCompId(null)
@@ -595,6 +601,23 @@ export function LogCatch() {
                           ))}
                         </div>
                       </div>
+
+                      {/* Venue */}
+                      <VenuePicker
+                        venues={venues}
+                        value={formData.venueId}
+                        onChange={(venueId, venueName) => {
+                          update({
+                            venueId,
+                            // Auto-populate location name if not already set
+                            locationName:
+                              venueName && !formData.locationName.trim()
+                                ? venueName
+                                : formData.locationName,
+                          })
+                        }}
+                        theme="angler"
+                      />
 
                       {/* Location */}
                       <div>

@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: '🏆', label: 'Events', to: '/admin/competitions' },
   { icon: '🐟', label: 'Catches', to: '/admin/catches' },
   { icon: '🎖️', label: 'Awards', to: '/admin/achievements' },
+  { icon: '📍', label: 'Venues', to: '/admin/venues' },
 ]
 
 export function AdminLayout() {
@@ -103,7 +104,7 @@ export function AdminLayout() {
 
       {/* Mobile bottom tab bar — animated floating pill (framer-motion layoutId) */}
       <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-admin-bg2 border-t border-admin-border z-30 pb-[env(safe-area-inset-bottom,0)]">
-        <div className="grid grid-cols-5 h-20">
+        <div className="grid grid-cols-6 h-20">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}

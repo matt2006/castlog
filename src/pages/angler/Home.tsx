@@ -83,6 +83,7 @@ export function Home() {
 
   const [filter, setFilter] = useState<FilterCategory>('All')
   const [speciesSearch, setSpeciesSearch] = useState(searchParams.get('species') ?? '')
+  const [venueFilter, setVenueFilter] = useState(searchParams.get('venue') ?? '')
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedCatch, setSelectedCatch] = useState<Catch | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -90,6 +91,10 @@ export function Home() {
   useEffect(() => {
     if (searchParams.get('species')) {
       setSpeciesSearch(searchParams.get('species') ?? '')
+      setSearchParams({}, { replace: true })
+    }
+    if (searchParams.get('venue')) {
+      setVenueFilter(searchParams.get('venue') ?? '')
       setSearchParams({}, { replace: true })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -136,8 +141,11 @@ export function Home() {
       const q = speciesSearch.toLowerCase()
       result = result.filter((c) => c.species.toLowerCase().includes(q))
     }
+    if (venueFilter.trim()) {
+      result = result.filter((c) => c.venue_id === venueFilter)
+    }
     return result
-  }, [catches, filter, speciesSearch])
+  }, [catches, filter, speciesSearch, venueFilter])
 
   const competitionMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -256,28 +264,46 @@ export function Home() {
       )}
 
       {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-3 gap-2.5">
         <button
           onClick={() => navigate('/map')}
-          className="bg-angler-white rounded-[14px] shadow-card-light px-4 py-3.5 flex items-center gap-2 active:scale-[0.98] transition-transform"
+          className="bg-angler-white rounded-[14px] shadow-card-light px-3 py-3.5 flex flex-col items-center gap-1.5 active:scale-[0.98] transition-transform"
         >
-          <span className="text-angler-teal text-[20px] leading-none">🗺️</span>
-          <span className="text-angler-text text-[13px] font-semibold">Catch Map</span>
+          <span className="text-angler-teal text-[22px] leading-none">🗺️</span>
+          <span className="text-angler-text text-[12px] font-semibold text-center leading-tight">Catch Map</span>
         </button>
         <button
           onClick={() => navigate('/species')}
-          className="bg-angler-white rounded-[14px] shadow-card-light px-4 py-3.5 flex items-center gap-2 active:scale-[0.98] transition-transform"
+          className="bg-angler-white rounded-[14px] shadow-card-light px-3 py-3.5 flex flex-col items-center gap-1.5 active:scale-[0.98] transition-transform"
         >
-          <span className="text-angler-teal text-[20px] leading-none">📖</span>
-          <span className="text-angler-text text-[13px] font-semibold">Species Guide</span>
+          <span className="text-angler-teal text-[22px] leading-none">📖</span>
+          <span className="text-angler-text text-[12px] font-semibold text-center leading-tight">Species Guide</span>
+        </button>
+        <button
+          onClick={() => navigate('/venues')}
+          className="bg-angler-white rounded-[14px] shadow-card-light px-3 py-3.5 flex flex-col items-center gap-1.5 active:scale-[0.98] transition-transform"
+        >
+          <span className="text-angler-teal text-[22px] leading-none">📍</span>
+          <span className="text-angler-text text-[12px] font-semibold text-center leading-tight">Venues</span>
         </button>
       </div>
 
       {/* Your Catches */}
       <section>
-        <h2 className="text-[13px] font-bold uppercase tracking-[0.06em] text-angler-text2 mb-3">
-          Your Catches
-        </h2>
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="text-[13px] font-bold uppercase tracking-[0.06em] text-angler-text2">
+            Your Catches
+          </h2>
+          {venueFilter && (
+            <button
+              onClick={() => setVenueFilter('')}
+              className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-full bg-angler-teal-l border border-angler-teal/30 text-angler-teal"
+            >
+              📍 Venue filter
+              <span className="ml-0.5 text-[10px]">✕</span>
+            </button>
+          )}
+        </div>
 
         {/* Filter pills */}
         <div className="flex gap-2 overflow-x-auto -mx-5 px-5 scrollbar-hide mb-3">

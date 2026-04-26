@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Session, Profile, Catch, Competition, AchievementEarned, OfflineCatch } from '@/types'
+import type { Session, Profile, Catch, Competition, AchievementEarned, OfflineCatch, Venue } from '@/types'
 import { supabase, uploadPhotoBlob } from '@/lib/supabase'
 import { cacheProfile, cacheCatches, getOfflineQueue, removeOfflineItem } from '@/lib/offline'
 
@@ -11,6 +11,7 @@ interface AppState {
   catches: Catch[]
   competitions: Competition[]
   earnedAchievements: AchievementEarned[]
+  venues: Venue[]
 
   isOnline: boolean
   offlineQueue: OfflineCatch[]
@@ -25,6 +26,7 @@ interface AppState {
   updateCompetition: (c: Competition) => void
   setEarnedAchievements: (a: AchievementEarned[]) => void
   addEarnedAchievement: (a: AchievementEarned) => void
+  setVenues: (v: Venue[]) => void
   setIsOnline: (v: boolean) => void
   setOfflineQueue: (q: OfflineCatch[]) => void
   addOfflineItem: (item: OfflineCatch) => void
@@ -44,6 +46,7 @@ export const useStore = create<AppState>((set, get) => ({
   catches: [],
   competitions: [],
   earnedAchievements: [],
+  venues: [],
 
   isOnline: navigator.onLine,
   offlineQueue: [],
@@ -62,6 +65,7 @@ export const useStore = create<AppState>((set, get) => ({
   setEarnedAchievements: (earnedAchievements) => set({ earnedAchievements }),
   addEarnedAchievement: (a) =>
     set((s) => ({ earnedAchievements: [...s.earnedAchievements, a] })),
+  setVenues: (venues) => set({ venues }),
   setIsOnline: (isOnline) => set({ isOnline }),
   setOfflineQueue: (offlineQueue) => set({ offlineQueue }),
   addOfflineItem: (item) =>
@@ -121,10 +125,10 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   loadUserData: async (userId) => {
-    const [catchesRes, achievementsRes, competitionMembersRes] = await Promise.all([
+    const [catchesRes, achievementsRes, competitionMembersRes, venuesRes] = await Promise.all([
       supabase
         .from('catches')
-        .select('*, profiles(username, avatar_emoji, avatar_color)')
+        .select('*, profiles(username, avatar_emoji, avatar_color), venue:venues(*)')
         .eq('angler_id', userId)
         .order('timestamp', { ascending: false }),
       supabase
@@ -135,6 +139,10 @@ export const useStore = create<AppState>((set, get) => ({
         .from('competition_members')
         .select('competition_id')
         .eq('angler_id', userId),
+      supabase
+        .from('venues')
+        .select('*')
+        .order('name', { ascending: true }),
     ])
 
     if (catchesRes.data) {
@@ -142,12 +150,13 @@ export const useStore = create<AppState>((set, get) => ({
       cacheCatches(catchesRes.data as Catch[])
     }
     if (achievementsRes.data) set({ earnedAchievements: achievementsRes.data as AchievementEarned[] })
+    if (venuesRes.data) set({ venues: venuesRes.data as Venue[] })
 
     if (competitionMembersRes.data?.length) {
       const ids = competitionMembersRes.data.map((m) => m.competition_id)
       const { data: comps } = await supabase
         .from('competitions')
-        .select('*')
+        .select('*, venue:venues(*)')
         .in('id', ids)
         .order('start_time', { ascending: false })
       if (comps) set({ competitions: comps as Competition[] })

@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BottomNav } from '@/components/shared/BottomNav'
 import { OfflineBanner } from '@/components/shared/OfflineBanner'
 import { useStore } from '@/store/useStore'
 
 export function AnglerLayout() {
+  const _location = useLocation()
+  useEffect(() => {
+    console.log('[Route] location changed to:', _location.pathname, '— key:', _location.key)
+  }, [_location.pathname, _location.key])
   const catches = useStore((s) => s.catches)
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showInstallBanner, setShowInstallBanner] = useState(false)

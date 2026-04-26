@@ -107,9 +107,40 @@ export function LogCatch() {
     }
   }, [])
 
-  const close = () => setIsOpen(false)
+  // ── DIAGNOSTIC: watch step changes ──────────────────────────────────────
+  useEffect(() => {
+    console.log('[LogCatch] step_changed_to', step)
+  }, [step])
+
+  // ── DIAGNOSTIC: watch isOpen changes ────────────────────────────────────
+  useEffect(() => {
+    console.log('[LogCatch] isOpen_changed_to', isOpen)
+  }, [isOpen])
+
+  // ── DIAGNOSTIC: unmount ──────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      console.log('[LogCatch] UNMOUNTING — step at unmount time captured in closure')
+    }
+  }, [])
+
+  // stepRef lets the unmount log see the current step without stale closure
+  const stepRef = useRef(step)
+  useEffect(() => { stepRef.current = step }, [step])
+  useEffect(() => {
+    return () => {
+      console.log('[LogCatch] UNMOUNTING — stepRef.current =', stepRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const close = () => {
+    console.trace('[LogCatch] close_called — isOpen:', isOpen, 'step:', stepRef.current, 'submitting (via ref below)')
+    setIsOpen(false)
+  }
 
   const onSheetClosed = () => {
+    console.log('[LogCatch] onSheetClosed — location.key:', location.key, 'navigating', location.key === 'default' ? 'to /' : 'back')
     // Deep-link to /log (no in-app history) → fall back to Home.
     // Otherwise navigate back to wherever we came from.
     if (location.key === 'default') {
@@ -172,6 +203,18 @@ export function LogCatch() {
 
   async function handleSubmit() {
     if (!profile) return
+
+    // ── DIAGNOSTIC ────────────────────────────────────────────────────────
+    console.log('[LogCatch] submit_start', {
+      step,
+      species: formData.customSpecies.trim() || formData.species,
+      weight: formData.weight,
+      has_photo: !!formData.photoFile,
+      has_competition: !!formData.competitionId,
+      isOnline,
+    })
+    // ─────────────────────────────────────────────────────────────────────
+
     setSubmitting(true)
 
     let savedCatch: Catch | null = null
@@ -183,7 +226,9 @@ export function LogCatch() {
       let photoBase64: string | null = null
       if (formData.photoFile) {
         if (isOnline) {
+          console.log('[LogCatch] photo_upload_start')
           photoUrl = await uploadCatchPhoto(formData.photoFile, profile.id)
+          console.log('[LogCatch] photo_upload_done — url:', photoUrl)
         } else {
           const compressed = await compressImageToBlob(formData.photoFile, 800)
           photoBase64 = await blobToBase64(compressed)
@@ -225,15 +270,20 @@ export function LogCatch() {
 
       if (isOnline) {
         try {
+          console.log('[LogCatch] insert_start', catchData)
           const { data, error } = await supabase
             .from('catches')
             .insert(catchData)
             .select('*, profiles(username, avatar_emoji, avatar_color)')
             .single()
-          if (error) console.error('[handleSubmit] catch insert failed:', error.message)
+          if (error) {
+            console.error('[LogCatch] insert_error', error)
+          } else {
+            console.log('[LogCatch] insert_done — row:', data)
+          }
           savedCatch = (data as Catch | null) ?? fallbackCatch()
         } catch (err) {
-          console.error('[handleSubmit] insert threw:', err)
+          console.error('[LogCatch] insert_threw', err)
           savedCatch = fallbackCatch()
         }
         addCatch(savedCatch)
@@ -261,13 +311,16 @@ export function LogCatch() {
         const earnedIds = earnedAchievements.map((a) => a.achievement_id)
         const allCatches = [savedCatch, ...catches]
         const newAchievements = checkNewAchievements(allCatches, earnedIds)
+        console.log('[LogCatch] achievements_start — newAchievements:', newAchievements.length)
         for (const ach of newAchievements) {
+          console.log('[LogCatch] achievement_processing — id:', ach.id)
           if (isOnline) {
-            const { data } = await supabase
+            const { data, error } = await supabase
               .from('achievements_earned')
               .insert({ angler_id: profile.id, achievement_id: ach.id })
               .select()
               .single()
+            console.log('[LogCatch] achievement_insert_result — data:', data, 'error:', error)
             if (data) addEarnedAchievement(data)
           }
           setAchievementToasts((prev) => [
@@ -275,8 +328,9 @@ export function LogCatch() {
             { id: ach.id, name: ach.name, description: ach.description, icon: ach.icon, rarity: ach.rarity },
           ])
         }
+        console.log('[LogCatch] achievements_done')
       } catch (err) {
-        console.error('[handleSubmit] achievements error:', err)
+        console.error('[LogCatch] achievements_error', err)
       }
 
       navigator.vibrate?.(200)
@@ -286,12 +340,12 @@ export function LogCatch() {
         setIsPB(true)
       }
     } catch (err) {
-      console.error('[handleSubmit] unexpected error:', err)
+      console.error('[LogCatch] submit_caught_error — unexpected throw in outer try:', err)
     } finally {
-      // Always advance to step 4 so the sheet never gets stuck on "Saving…"
-      // and the backdrop never permanently blocks the nav.
+      console.log('[LogCatch] submit_finally — about to setStep(4), current step via ref:', stepRef.current, 'isOpen:', isOpen)
       setNewCatch(savedCatch)
       setSubmitting(false)
+      console.log('[LogCatch] set_step_4_called')
       setStep(4)
     }
   }

@@ -8,12 +8,12 @@
   }
 
   html {
-    @apply bg-admin-bg text-admin-text;
+    @apply bg-angler-bg text-angler-text;
     font-family: 'Outfit', system-ui, sans-serif;
   }
 
   body {
-    @apply bg-admin-bg text-admin-text min-h-screen;
+    @apply bg-angler-bg text-angler-text min-h-screen;
     overscroll-behavior: none;
   }
 
@@ -22,89 +22,24 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-admin-bg;
+    @apply bg-angler-bg;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-admin-border rounded-full;
+    @apply bg-angler-border rounded-full;
   }
 }
 
-@layer components {
-  /* Admin-only component classes. Angler screens use inline utilities. */
-  .btn-primary {
-    @apply bg-admin-teal text-admin-bg font-bold py-3 px-6 rounded-xl min-h-[44px] flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none;
-  }
-
-  .btn-ghost {
-    @apply bg-admin-bg2 text-admin-text font-medium py-3 px-6 rounded-xl min-h-[44px] flex items-center justify-center gap-2 transition-all active:scale-95 border border-admin-border;
-  }
-
-  .btn-danger {
-    @apply bg-admin-red/10 text-admin-red border border-admin-red/30 font-medium py-3 px-6 rounded-xl min-h-[44px] flex items-center justify-center gap-2 transition-all active:scale-95;
-  }
-
-  .card {
-    @apply bg-admin-bg2 border border-admin-border rounded-2xl p-4;
-  }
-
-  .input {
-    @apply bg-admin-bg3 border border-admin-border rounded-xl px-4 py-3 text-admin-text placeholder-admin-text3 w-full min-h-[44px] focus:outline-none focus:border-admin-teal transition-colors;
-  }
-
-  .label {
-    @apply text-admin-text2 text-sm font-medium mb-1.5 block;
-  }
-
-  .badge-live {
-    @apply bg-admin-green/15 text-admin-green border border-admin-green/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide;
-  }
-
-  .badge-upcoming {
-    @apply bg-admin-gold-dim text-admin-gold border border-admin-gold/30 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide;
-  }
-
-  .badge-ended {
-    @apply bg-admin-text3/10 text-admin-text3 border border-admin-text3/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide;
-  }
-
-  .rarity-common { @apply text-admin-text2; }
-  .rarity-rare { @apply text-blue-400; }
-  .rarity-epic { @apply text-purple-400; }
-  .rarity-legendary { @apply text-admin-gold; }
-
-  .rarity-bg-common { @apply bg-admin-text3/10 border-admin-text3/20; }
-  .rarity-bg-rare { @apply bg-blue-500/10 border-blue-500/20; }
-  .rarity-bg-epic { @apply bg-purple-500/10 border-purple-500/20; }
-  .rarity-bg-legendary { @apply bg-admin-gold-dim border-admin-gold/30; }
-
-  .stat-card {
-    @apply card flex flex-col gap-1;
-  }
-
-  .stat-value {
-    @apply text-2xl font-black text-admin-text;
-  }
-
-  .stat-label {
-    @apply text-admin-text2 text-xs font-medium uppercase tracking-wider;
-  }
-
-  .section-title {
-    @apply text-admin-text2 text-xs font-bold uppercase tracking-widest mb-3;
-  }
-}
-
-/* Leaflet overrides — scoped to the angler theme so admin (no maps) is untouched */
+/* Leaflet overrides */
 .leaflet-container {
   font-family: 'Outfit', sans-serif;
 }
 
-[data-theme='angler'] .leaflet-container {
+.leaflet-container {
   background: oklch(0.92 0.01 80) !important;
 }
 
-[data-theme='angler'] .leaflet-popup-content-wrapper {
+.leaflet-popup-content-wrapper {
   background: oklch(1 0 0) !important;
   border: 1px solid oklch(0.88 0.01 80);
   color: oklch(0.18 0.015 230);
@@ -112,11 +47,11 @@
   box-shadow: 0 4px 24px oklch(0 0 0 / 0.10), 0 1px 4px oklch(0 0 0 / 0.06);
 }
 
-[data-theme='angler'] .leaflet-popup-tip {
+.leaflet-popup-tip {
   background: oklch(1 0 0) !important;
 }
 
-[data-theme='angler'] .leaflet-popup-close-button {
+.leaflet-popup-close-button {
   color: oklch(0.45 0.02 230) !important;
 }
 

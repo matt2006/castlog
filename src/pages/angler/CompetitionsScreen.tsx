@@ -170,7 +170,6 @@ function CompSheet({
             venues={venues}
             value={form.venue_id}
             onChange={(id) => setForm({ ...form, venue_id: id })}
-            theme="angler"
           />
 
           {error && (

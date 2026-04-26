@@ -616,7 +616,6 @@ export function LogCatch() {
                                 : formData.locationName,
                           })
                         }}
-                        theme="angler"
                       />
 
                       {/* Location */}

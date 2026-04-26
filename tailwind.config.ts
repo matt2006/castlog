@@ -5,23 +5,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Admin (dark OKLCH). <alpha-value> lets opacity modifiers work (e.g. bg-admin-teal/20).
-        admin: {
-          bg: 'oklch(0.12 0.015 230 / <alpha-value>)',
-          bg2: 'oklch(0.16 0.018 228 / <alpha-value>)',
-          bg3: 'oklch(0.20 0.02 226 / <alpha-value>)',
-          border: 'oklch(0.28 0.02 228 / <alpha-value>)',
-          text: 'oklch(0.95 0.005 220 / <alpha-value>)',
-          text2: 'oklch(0.60 0.015 225 / <alpha-value>)',
-          text3: 'oklch(0.40 0.015 225 / <alpha-value>)',
-          teal: 'oklch(0.75 0.18 175 / <alpha-value>)',
-          'teal-dim': 'oklch(0.75 0.18 175 / 0.15)',
-          gold: 'oklch(0.78 0.17 82 / <alpha-value>)',
-          'gold-dim': 'oklch(0.78 0.17 82 / 0.15)',
-          green: 'oklch(0.72 0.17 145 / <alpha-value>)',
-          red: 'oklch(0.68 0.21 25 / <alpha-value>)',
-        },
-
         // Angler (light warm OKLCH).
         angler: {
           bg: 'oklch(0.96 0.008 80)',

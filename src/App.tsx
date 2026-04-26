@@ -11,6 +11,7 @@ import { CompetitionDetailScreen } from '@/pages/angler/CompetitionDetailScreen'
 import { SpeciesGuide } from '@/pages/angler/SpeciesGuide'
 import { CatchMap } from '@/pages/angler/CatchMap'
 import { VenueDirectory } from '@/pages/angler/VenueDirectory'
+import { History } from '@/pages/angler/History'
 import { Settings } from '@/pages/angler/Settings'
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/species" element={<SpeciesGuide />} />
           <Route path="/map" element={<CatchMap />} />
           <Route path="/venues" element={<VenueDirectory />} />
+          <Route path="/history" element={<History />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>

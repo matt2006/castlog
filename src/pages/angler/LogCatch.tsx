@@ -116,11 +116,7 @@ export function LogCatch() {
   // the entire sheet from the DOM regardless of animation state.
   const close = () => {
     setIsOpen(false)
-    if (location.key === 'default') {
-      navigate('/', { replace: true })
-    } else {
-      navigate(-1)
-    }
+    navigate('/', { replace: true })
   }
 
   const filteredSpecies = useMemo(() => {

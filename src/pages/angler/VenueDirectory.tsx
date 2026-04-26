@@ -148,7 +148,7 @@ export function VenueDirectory() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/40 flex items-end sm:items-center sm:justify-center"
+            className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center sm:justify-center"
             onClick={() => setSelected(null)}
           >
             <motion.div
@@ -157,7 +157,7 @@ export function VenueDirectory() {
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md relative max-h-[90vh] flex flex-col overflow-hidden"
+              className="bg-angler-bg rounded-t-[24px] sm:rounded-[24px] sm:border sm:border-angler-border shadow-sheet w-full sm:max-w-md relative h-[85vh] flex flex-col overflow-hidden"
             >
               {/* Close button */}
               <button

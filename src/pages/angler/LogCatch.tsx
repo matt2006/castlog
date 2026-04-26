@@ -405,6 +405,11 @@ export function LogCatch() {
 
               {/* Body */}
               <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom,0)+1.25rem)]">
+                {/* Steps 1–3 use mode="wait" so slides feel snappy between pages.
+                    Step 4 (success) is rendered OUTSIDE AnimatePresence so it appears
+                    immediately — no 220 ms exit-wait gap that would leave the backdrop
+                    live over an empty content area (causing accidental close taps). */}
+                {step < 4 && (
                 <AnimatePresence mode="wait" initial={false}>
                   {step === 1 && (
                     <motion.div
@@ -806,15 +811,16 @@ export function LogCatch() {
                     </motion.div>
                   )}
 
-                  {step === 4 && (
-                    <motion.div
-                      key="step4"
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -12 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="text-center pt-2"
-                    >
+                </AnimatePresence>
+                )}
+
+                {step === 4 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="text-center pt-2"
+                  >
                       {formData.photoPreview ? (
                         <div className="w-[120px] h-[120px] rounded-full overflow-hidden mx-auto mb-4 border-4 border-angler-teal">
                           <img
@@ -898,9 +904,8 @@ export function LogCatch() {
                           Log another catch
                         </button>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           </motion.div>

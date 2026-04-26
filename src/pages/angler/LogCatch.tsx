@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
+import { Camera, Check, ChevronRight, Search } from 'lucide-react'
 import {
   blobToBase64,
   compressImageToBlob,
@@ -357,7 +358,7 @@ export function LogCatch() {
               animate={{ y: 0, transition: { type: 'spring', stiffness: 280, damping: 32, mass: 0.9 } }}
               exit={{ y: '100%', transition: { duration: 0.22, ease: 'easeOut' } }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute left-0 right-0 bottom-0 bg-angler-bg rounded-t-[24px] shadow-sheet max-h-[92vh] flex flex-col font-sans"
+              className="absolute left-0 right-0 bottom-0 bg-angler-bg rounded-t-[24px] shadow-sheet h-[85vh] flex flex-col font-sans"
             >
               {/* Drag handle */}
               <div className="pt-3 pb-1 flex-shrink-0 flex justify-center">
@@ -366,7 +367,7 @@ export function LogCatch() {
 
               {/* Header */}
               <div className="px-5 pt-1 pb-2 flex items-center justify-between flex-shrink-0">
-                <h1 className="text-[22px] font-extrabold text-angler-text tracking-tight">
+                <h1 className="text-[24px] font-semibold text-angler-text tracking-tight">
                   {step === 1 && 'Pick a species'}
                   {step === 2 && 'Catch details'}
                   {step === 3 && 'Add a photo'}
@@ -382,28 +383,17 @@ export function LogCatch() {
                 </button>
               </div>
 
-              {/* Progress indicator — 3 input steps (Species · Details · Photo). Hidden on the final Done view. */}
+              {/* Progress bar — 4 segments across the 3 input steps. Hidden on Done view. */}
               {step !== 4 && (
-                <div className="px-5 pb-3 flex items-center justify-center gap-1.5 flex-shrink-0">
-                  {[1, 2, 3].map((n) => {
-                    const active = n === step
-                    const done = n < step
-                    return (
-                      <motion.div
-                        key={n}
-                        layout
-                        animate={{ width: active ? 20 : 6 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className={`h-1.5 rounded-full ${
-                          active
-                            ? 'bg-angler-teal'
-                            : done
-                            ? 'bg-angler-teal/60'
-                            : 'bg-angler-border'
-                        }`}
-                      />
-                    )
-                  })}
+                <div className="px-5 pb-3 flex gap-1.5 flex-shrink-0">
+                  {[1, 2, 3, 4].map((n) => (
+                    <div
+                      key={n}
+                      className={`flex-1 h-[3px] rounded-full transition-colors duration-300 ${
+                        n <= step ? 'bg-angler-forest' : 'bg-angler-border'
+                      }`}
+                    />
+                  ))}
                 </div>
               )}
 
@@ -414,352 +404,365 @@ export function LogCatch() {
                     immediately — no 220 ms exit-wait gap that would leave the backdrop
                     live over an empty content area (causing accidental close taps). */}
                 {step < 4 && (
-                <AnimatePresence mode="wait" initial={false}>
-                  {step === 1 && (
-                    <motion.div
-                      key="step1"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                    >
-                      {/* Search */}
-                      <div className="relative mb-3">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-angler-text3">
-                          🔍
-                        </span>
-                        <input
-                          type="text"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] pl-9 pr-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
-                          placeholder="Search species…"
-                          value={speciesSearch}
-                          onChange={(e) => setSpeciesSearch(e.target.value)}
-                        />
-                      </div>
-
-                      {/* Category pills */}
-                      <div className="flex gap-2 overflow-x-auto -mx-5 px-5 scrollbar-hide mb-4">
-                        {CATEGORY_FILTERS.map((f) => (
-                          <button
-                            key={f}
-                            onClick={() => setCategoryFilter(f)}
-                            className={`flex-shrink-0 px-4 h-10 rounded-full text-[13px] font-semibold min-h-[44px] transition-all ${
-                              categoryFilter === f
-                                ? 'bg-angler-teal text-white shadow-card-light'
-                                : 'bg-angler-white text-angler-text2 border border-angler-border'
-                            }`}
-                          >
-                            {f}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Species grid */}
-                      <div className="grid grid-cols-2 gap-2.5 mb-3">
-                        {filteredSpecies.map((s) => {
-                          const active =
-                            formData.species === s.name && !formData.customSpecies
-                          return (
-                            <button
-                              key={s.name}
-                              onClick={() => {
-                                update({ species: s.name, customSpecies: '' })
-                                setShowCustomInput(false)
-                                setStep(2)
-                              }}
-                              className={`flex flex-col items-center justify-center gap-1.5 rounded-[14px] border p-3 min-h-[86px] transition-colors ${
-                                active
-                                  ? 'border-angler-teal bg-angler-teal-l'
-                                  : 'border-angler-border bg-angler-white'
-                              }`}
-                            >
-                              <span className="text-[28px] leading-none">{s.emoji}</span>
-                              <span className="text-[13px] font-semibold text-angler-text text-center leading-tight">
-                                {s.name}
-                              </span>
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                      {/* Other / custom */}
-                      <button
-                        onClick={() => {
-                          setShowCustomInput(true)
-                          update({ species: '', customSpecies: '' })
-                        }}
-                        className={`w-full rounded-[14px] border py-3 text-[13px] font-semibold transition-all ${
-                          showCustomInput
-                            ? 'border-angler-teal bg-angler-teal-l text-angler-teal'
-                            : 'border-angler-border bg-angler-white text-angler-text2'
-                        }`}
+                  <AnimatePresence mode="wait" initial={false}>
+                    {step === 1 && (
+                      <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -24 }}
+                        transition={{ duration: 0.22, ease: 'easeOut' }}
                       >
-                        Other species
-                      </button>
-                      {showCustomInput && (
-                        <>
+                        {/* Search */}
+                        <div className="relative mb-3">
+                          <Search
+                            size={17}
+                            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-angler-text3 pointer-events-none"
+                          />
                           <input
                             type="text"
-                            className="w-full mt-2 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
-                            placeholder="Enter species name…"
-                            autoFocus
-                            value={formData.customSpecies}
-                            onChange={(e) => update({ customSpecies: e.target.value })}
+                            className="w-full bg-angler-white border border-angler-border rounded-[12px] pl-10 pr-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-forest transition-colors min-h-[48px]"
+                            placeholder="Search species…"
+                            value={speciesSearch}
+                            onChange={(e) => setSpeciesSearch(e.target.value)}
                           />
-                          <button
-                            onClick={() => effectiveSpecies && setStep(2)}
-                            disabled={!effectiveSpecies}
-                            className="mt-3 w-full py-3.5 rounded-[12px] bg-angler-teal text-white font-bold text-[15px] transition-opacity disabled:bg-angler-text3/30 min-h-[44px]"
-                          >
-                            Continue →
-                          </button>
-                        </>
-                      )}
-                    </motion.div>
-                  )}
+                        </div>
 
-                  {step === 2 && (
-                    <motion.div
-                      key="step2"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                      className="space-y-4"
-                    >
-                      {/* Selected species recap */}
-                      <button
-                        onClick={() => setStep(1)}
-                        className="w-full flex items-center gap-2.5 bg-angler-teal-l border border-angler-teal-m rounded-[12px] px-3 py-2.5 text-left active:scale-[0.99] transition-transform"
-                      >
-                        <span className="text-[24px] leading-none">
-                          {getSpeciesEmoji(effectiveSpecies)}
-                        </span>
-                        <span className="flex-1 font-bold text-angler-teal text-[14px]">
-                          {effectiveSpecies}
-                        </span>
-                        <span className="text-angler-teal text-[12px] font-semibold">
-                          Change
-                        </span>
-                      </button>
-
-                      {/* Weight */}
-                      <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
-                          ⚖️ Weight (kg)
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
-                          placeholder="0.000"
-                          step="0.001"
-                          min="0"
-                          value={formData.weight}
-                          onChange={(e) => update({ weight: e.target.value })}
-                        />
-                      </div>
-
-                      {/* Length */}
-                      <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
-                          📏 Length (cm) · optional
-                        </label>
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
-                          placeholder="e.g. 45.5"
-                          step="0.1"
-                          min="0"
-                          max="999.9"
-                          value={formData.length}
-                          onChange={(e) => update({ length: e.target.value })}
-                        />
-                      </div>
-
-                      {/* Method */}
-                      <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
-                          Method
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {METHODS.map((m) => (
+                        {/* Category chips */}
+                        <div className="flex gap-2 overflow-x-auto -mx-5 px-5 scrollbar-hide mb-4">
+                          {CATEGORY_FILTERS.map((f) => (
                             <button
-                              key={m}
-                              onClick={() =>
-                                update({ method: formData.method === m ? null : m })
-                              }
-                              className={`px-4 h-10 rounded-full text-[13px] font-semibold min-h-[44px] transition-all ${
-                                formData.method === m
-                                  ? 'bg-angler-teal text-white shadow-card-light'
+                              key={f}
+                              onClick={() => setCategoryFilter(f)}
+                              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all ${
+                                categoryFilter === f
+                                  ? 'bg-angler-forest text-white'
                                   : 'bg-angler-white text-angler-text2 border border-angler-border'
                               }`}
                             >
-                              {m}
+                              {f}
                             </button>
                           ))}
                         </div>
-                      </div>
 
-                      {/* Venue */}
-                      <VenuePicker
-                        venues={venues}
-                        value={formData.venueId}
-                        onChange={(venueId, venueName) => {
-                          update({
-                            venueId,
-                            // Auto-populate location name if not already set
-                            locationName:
-                              venueName && !formData.locationName.trim()
-                                ? venueName
-                                : formData.locationName,
-                          })
-                        }}
-                      />
-
-                      {/* Location */}
-                      <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
-                          📍 Location
-                        </label>
-                        <div className="flex gap-2 mb-2">
-                          <button
-                            onClick={() => {
-                              setLocationMode('gps')
-                              if (!gpsObtained) handleGetGPS()
-                            }}
-                            className={`flex-1 min-h-[44px] rounded-[12px] border text-[13px] font-semibold transition-all px-3 ${
-                              locationMode === 'gps'
-                                ? 'border-angler-teal bg-angler-teal-l text-angler-teal'
-                                : 'border-angler-border bg-angler-white text-angler-text2'
-                            }`}
-                          >
-                            {gpsLoading
-                              ? '⏳ Getting…'
-                              : gpsObtained
-                              ? '📍 GPS obtained'
-                              : '📍 Use GPS'}
-                          </button>
-                          <button
-                            onClick={() => setLocationMode('text')}
-                            className={`flex-1 min-h-[44px] rounded-[12px] border text-[13px] font-semibold transition-all px-3 ${
-                              locationMode === 'text'
-                                ? 'border-angler-teal bg-angler-teal-l text-angler-teal'
-                                : 'border-angler-border bg-angler-white text-angler-text2'
-                            }`}
-                          >
-                            ✏️ Type name
-                          </button>
-                        </div>
-                        {gpsError && (
-                          <p className="text-red-500 text-[12px] mb-1">{gpsError}</p>
-                        )}
-                        {locationMode === 'text' && (
-                          <input
-                            type="text"
-                            className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-teal transition-colors min-h-[44px]"
-                            placeholder="e.g. River Wye, Hereford"
-                            value={formData.locationName}
-                            onChange={(e) => update({ locationName: e.target.value })}
-                          />
-                        )}
-                        {weatherLoading && (
-                          <p className="text-angler-text3 text-[12px] mt-1">
-                            🌤 Fetching weather…
-                          </p>
-                        )}
-                        {formData.weather && (
-                          <div className="bg-angler-bg2 border border-angler-border rounded-[12px] px-3 py-2 mt-1 text-[12px] text-angler-text2">
-                            🌤 {formData.weather.temperature}°C · {formData.weather.windspeed} km/h ·{' '}
-                            {formData.weather.description}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Competition */}
-                      {liveComps.length > 0 && (
-                        <div>
-                          <label className="block text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-1.5">
-                            🏆 Competition · optional
-                          </label>
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => update({ competitionId: null })}
-                              className={`w-full text-left px-4 py-3 rounded-[12px] border text-[13px] font-semibold min-h-[44px] transition-all ${
-                                formData.competitionId === null
-                                  ? 'border-angler-teal bg-angler-teal-l text-angler-teal'
-                                  : 'border-angler-border bg-angler-white text-angler-text2'
-                              }`}
-                            >
-                              No competition
-                            </button>
-                            {liveComps.map((comp) => (
+                        {/* Species vertical list */}
+                        <div className="space-y-2 mb-3">
+                          {filteredSpecies.map((s) => {
+                            const active =
+                              formData.species === s.name && !formData.customSpecies
+                            return (
                               <button
-                                key={comp.id}
-                                onClick={() => update({ competitionId: comp.id })}
-                                className={`w-full text-left px-4 py-3 rounded-[12px] border text-[13px] font-semibold min-h-[44px] transition-all ${
-                                  formData.competitionId === comp.id
-                                    ? 'border-angler-teal bg-angler-teal-l text-angler-teal'
-                                    : 'border-angler-border bg-angler-white text-angler-text2'
+                                key={s.name}
+                                onClick={() => {
+                                  update({ species: s.name, customSpecies: '' })
+                                  setShowCustomInput(false)
+                                  setStep(2)
+                                }}
+                                className="w-full flex items-center gap-3 bg-angler-white rounded-[16px] px-3 min-h-[64px] text-left transition-colors active:scale-[0.99]"
+                              >
+                                <span className="w-11 h-11 rounded-full bg-angler-fish-bg flex items-center justify-center text-[22px] leading-none shrink-0">
+                                  {s.emoji}
+                                </span>
+                                <span className="flex-1 min-w-0">
+                                  <span
+                                    className={`block text-[15px] font-semibold leading-tight ${
+                                      active ? 'text-angler-forest' : 'text-angler-text'
+                                    }`}
+                                  >
+                                    {s.name}
+                                  </span>
+                                  <span className="block text-[12px] text-angler-text3 capitalize mt-0.5">
+                                    {s.category}
+                                  </span>
+                                </span>
+                                {active ? (
+                                  <span className="w-6 h-6 rounded-full bg-angler-forest flex items-center justify-center shrink-0">
+                                    <Check size={14} strokeWidth={2.5} className="text-white" />
+                                  </span>
+                                ) : (
+                                  <ChevronRight size={18} className="text-angler-text3 shrink-0" />
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        {/* Other / custom */}
+                        <button
+                          onClick={() => {
+                            setShowCustomInput(true)
+                            update({ species: '', customSpecies: '' })
+                          }}
+                          className={`w-full rounded-full border py-3 text-[14px] font-semibold transition-all ${
+                            showCustomInput
+                              ? 'border-angler-forest bg-angler-forest-l text-angler-forest'
+                              : 'border-angler-border bg-angler-white text-angler-text2'
+                          }`}
+                        >
+                          + Other species
+                        </button>
+                        {showCustomInput && (
+                          <>
+                            <input
+                              type="text"
+                              className="w-full mt-2 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-forest transition-colors min-h-[44px]"
+                              placeholder="Enter species name…"
+                              autoFocus
+                              value={formData.customSpecies}
+                              onChange={(e) => update({ customSpecies: e.target.value })}
+                            />
+                            <button
+                              onClick={() => effectiveSpecies && setStep(2)}
+                              disabled={!effectiveSpecies}
+                              className="mt-3 w-full py-3.5 rounded-[12px] bg-angler-forest text-white font-bold text-[15px] transition-opacity disabled:opacity-30 min-h-[44px]"
+                            >
+                              Continue →
+                            </button>
+                          </>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {step === 2 && (
+                      <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -24 }}
+                        transition={{ duration: 0.22, ease: 'easeOut' }}
+                        className="space-y-4"
+                      >
+                        {/* Selected species summary card */}
+                        <button
+                          onClick={() => setStep(1)}
+                          className="w-full flex items-center gap-3 bg-angler-forest-l rounded-[16px] px-3 py-3 min-h-[64px] text-left active:scale-[0.99] transition-transform"
+                        >
+                          <span className="w-11 h-11 rounded-full bg-angler-fish-bg flex items-center justify-center text-[22px] leading-none shrink-0">
+                            {getSpeciesEmoji(effectiveSpecies)}
+                          </span>
+                          <span className="flex-1 font-semibold text-angler-forest text-[15px]">
+                            {effectiveSpecies}
+                          </span>
+                          <span className="text-angler-forest text-[12px] font-medium shrink-0">
+                            Change
+                          </span>
+                        </button>
+
+                        {/* Weight */}
+                        <div>
+                          <label className="block text-[12px] font-semibold tracking-wide uppercase mb-1.5">
+                            <span className="text-angler-text2">Weight (kg)</span>
+                          </label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[18px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-forest transition-colors min-h-[52px]"
+                            placeholder="0.000"
+                            step="0.001"
+                            min="0"
+                            value={formData.weight}
+                            onChange={(e) => update({ weight: e.target.value })}
+                          />
+                        </div>
+
+                        {/* Length */}
+                        <div>
+                          <label className="block text-[12px] font-semibold tracking-wide uppercase mb-1.5">
+                            <span className="text-angler-text2">Length (cm)</span>
+                            <span className="text-angler-text3"> · Optional</span>
+                          </label>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[18px] font-semibold text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-forest transition-colors min-h-[52px]"
+                            placeholder="e.g. 45.5"
+                            step="0.1"
+                            min="0"
+                            max="999.9"
+                            value={formData.length}
+                            onChange={(e) => update({ length: e.target.value })}
+                          />
+                        </div>
+
+                        {/* Method */}
+                        <div>
+                          <label className="block text-[12px] font-semibold tracking-wide uppercase text-angler-text2 mb-1.5">
+                            Method
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {METHODS.map((m) => (
+                              <button
+                                key={m}
+                                onClick={() =>
+                                  update({ method: formData.method === m ? null : m })
+                                }
+                                className={`px-4 py-2 rounded-full text-[13px] font-semibold min-h-[36px] transition-all ${
+                                  formData.method === m
+                                    ? 'bg-angler-forest text-white'
+                                    : 'bg-angler-white text-angler-text2 border border-angler-border'
                                 }`}
                               >
-                                🏆 {comp.name}
+                                {m}
                               </button>
                             ))}
                           </div>
                         </div>
-                      )}
 
-                      {/* Advance to photo step */}
-                      <button
-                        onClick={() => setStep(3)}
-                        disabled={!canSubmit}
-                        className="w-full py-3.5 rounded-[12px] bg-angler-teal text-white font-bold text-[15px] transition-opacity disabled:bg-angler-text3/30 min-h-[44px]"
-                      >
-                        Next: Add Photo →
-                      </button>
-                    </motion.div>
-                  )}
+                        {/* Venue */}
+                        <VenuePicker
+                          venues={venues}
+                          value={formData.venueId}
+                          onChange={(venueId, venueName) => {
+                            update({
+                              venueId,
+                              // Auto-populate location name if not already set
+                              locationName:
+                                venueName && !formData.locationName.trim()
+                                  ? venueName
+                                  : formData.locationName,
+                            })
+                          }}
+                        />
 
-                  {step === 3 && (
-                    <motion.div
-                      key="step3photo"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.22, ease: 'easeOut' }}
-                      className="space-y-4"
-                    >
-                      {/* Back-to-details recap */}
-                      <button
-                        onClick={() => setStep(2)}
-                        className="w-full flex items-center gap-2.5 bg-angler-teal-l border border-angler-teal-m rounded-[12px] px-3 py-2.5 text-left active:scale-[0.99] transition-transform"
-                      >
-                        <span className="text-[20px] leading-none">{getSpeciesEmoji(effectiveSpecies)}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-angler-teal text-[14px] font-bold truncate">
-                            {effectiveSpecies}
-                          </p>
-                          <p className="text-angler-text2 text-[11px] tabular-nums">
-                            {formData.weight || '0'} kg
-                            {formData.length ? ` · ${formData.length} cm` : ''}
-                            {formData.method ? ` · ${formData.method}` : ''}
-                          </p>
+                        {/* Location */}
+                        <div>
+                          <label className="block text-[12px] font-semibold tracking-wide uppercase text-angler-text2 mb-1.5">
+                            Location
+                          </label>
+                          <div className="flex gap-2 mb-2">
+                            <button
+                              onClick={() => {
+                                setLocationMode('gps')
+                                if (!gpsObtained) handleGetGPS()
+                              }}
+                              className={`flex-1 min-h-[44px] rounded-[12px] border text-[13px] font-semibold transition-all px-3 ${
+                                locationMode === 'gps'
+                                  ? 'border-angler-forest bg-angler-forest-l text-angler-forest'
+                                  : 'border-angler-border bg-angler-white text-angler-text2'
+                              }`}
+                            >
+                              {gpsLoading
+                                ? '⏳ Getting…'
+                                : gpsObtained
+                                ? '📍 GPS obtained'
+                                : '📍 Use GPS'}
+                            </button>
+                            <button
+                              onClick={() => setLocationMode('text')}
+                              className={`flex-1 min-h-[44px] rounded-[12px] border text-[13px] font-semibold transition-all px-3 ${
+                                locationMode === 'text'
+                                  ? 'border-angler-forest bg-angler-forest-l text-angler-forest'
+                                  : 'border-angler-border bg-angler-white text-angler-text2'
+                              }`}
+                            >
+                              ✏️ Type name
+                            </button>
+                          </div>
+                          {gpsError && (
+                            <p className="text-red-500 text-[12px] mb-1">{gpsError}</p>
+                          )}
+                          {locationMode === 'text' && (
+                            <input
+                              type="text"
+                              className="w-full bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-[16px] text-angler-text placeholder-angler-text3 focus:outline-none focus:border-angler-forest transition-colors min-h-[44px]"
+                              placeholder="e.g. River Wye, Hereford"
+                              value={formData.locationName}
+                              onChange={(e) => update({ locationName: e.target.value })}
+                            />
+                          )}
+                          {weatherLoading && (
+                            <p className="text-angler-text3 text-[12px] mt-1">
+                              🌤 Fetching weather…
+                            </p>
+                          )}
+                          {formData.weather && (
+                            <div className="bg-angler-bg2 border border-angler-border rounded-[12px] px-3 py-2 mt-1 text-[12px] text-angler-text2">
+                              🌤 {formData.weather.temperature}°C · {formData.weather.windspeed} km/h ·{' '}
+                              {formData.weather.description}
+                            </div>
+                          )}
                         </div>
-                        <span className="text-angler-teal text-[12px] font-semibold">Edit</span>
-                      </button>
 
-                      {/* Preview or dashed placeholder */}
-                      <div
-                        className={`relative w-full aspect-[4/3] rounded-[18px] overflow-hidden ${
-                          formData.photoPreview
-                            ? ''
-                            : 'border-2 border-dashed border-angler-border bg-angler-bg'
-                        }`}
+                        {/* Competition */}
+                        {liveComps.length > 0 && (
+                          <div>
+                            <label className="block text-[12px] font-semibold tracking-wide uppercase mb-1.5">
+                              <span className="text-angler-text2">Competition</span>
+                              <span className="text-angler-text3"> · Optional</span>
+                            </label>
+                            <div className="space-y-2">
+                              <button
+                                onClick={() => update({ competitionId: null })}
+                                className={`w-full text-left px-4 py-3 rounded-[12px] border text-[13px] font-semibold min-h-[44px] transition-all ${
+                                  formData.competitionId === null
+                                    ? 'border-angler-forest bg-angler-forest-l text-angler-forest'
+                                    : 'border-angler-border bg-angler-white text-angler-text2'
+                                }`}
+                              >
+                                No competition
+                              </button>
+                              {liveComps.map((comp) => (
+                                <button
+                                  key={comp.id}
+                                  onClick={() => update({ competitionId: comp.id })}
+                                  className={`w-full text-left px-4 py-3 rounded-[12px] border text-[13px] font-semibold min-h-[44px] transition-all ${
+                                    formData.competitionId === comp.id
+                                      ? 'border-angler-forest bg-angler-forest-l text-angler-forest'
+                                      : 'border-angler-border bg-angler-white text-angler-text2'
+                                  }`}
+                                >
+                                  🏆 {comp.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Advance to photo step */}
+                        <button
+                          onClick={() => setStep(3)}
+                          disabled={!canSubmit}
+                          className="w-full py-4 rounded-[14px] bg-angler-forest text-white font-semibold text-[16px] transition-opacity disabled:opacity-30 min-h-[56px]"
+                        >
+                          Next: Add Photo →
+                        </button>
+                      </motion.div>
+                    )}
+
+                    {step === 3 && (
+                      <motion.div
+                        key="step3photo"
+                        initial={{ opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -24 }}
+                        transition={{ duration: 0.22, ease: 'easeOut' }}
+                        className="space-y-4"
                       >
+                        {/* Back-to-details summary card */}
+                        <button
+                          onClick={() => setStep(2)}
+                          className="w-full flex items-center gap-3 bg-angler-forest-l rounded-[16px] px-3 py-3 min-h-[64px] text-left active:scale-[0.99] transition-transform"
+                        >
+                          <span className="w-11 h-11 rounded-full bg-angler-fish-bg flex items-center justify-center text-[22px] leading-none shrink-0">
+                            {getSpeciesEmoji(effectiveSpecies)}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-angler-forest text-[15px] font-semibold truncate">
+                              {effectiveSpecies}
+                            </p>
+                            <p className="text-angler-text2 text-[12px] tabular-nums">
+                              {formData.weight || '0'} kg
+                              {formData.length ? ` · ${formData.length} cm` : ''}
+                            </p>
+                          </div>
+                          <span className="text-angler-forest text-[12px] font-medium shrink-0">
+                            Edit
+                          </span>
+                        </button>
+
+                        {/* Preview or dashed placeholder */}
                         {formData.photoPreview ? (
-                          <>
+                          <div className="relative w-full h-[280px] rounded-[20px] overflow-hidden">
                             <img
                               src={formData.photoPreview}
                               alt="Catch preview"
@@ -772,66 +775,69 @@ export function LogCatch() {
                             >
                               ✕
                             </button>
-                          </>
+                          </div>
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center">
-                            <div className="text-[48px] leading-none mb-3">📷</div>
-                            <p className="text-angler-text3 text-[14px] font-medium">
+                          <div className="w-full h-[280px] rounded-[20px] border border-dashed border-angler-border bg-angler-white flex flex-col items-center justify-center gap-2">
+                            <div className="w-16 h-16 rounded-full bg-angler-bg2 flex items-center justify-center">
+                              <Camera size={28} className="text-angler-text3" />
+                            </div>
+                            <p className="text-[16px] font-semibold text-angler-text mt-1">
                               No photo yet
+                            </p>
+                            <p className="text-[13px] text-angler-text3">
+                              Tap below to add one
                             </p>
                           </div>
                         )}
-                      </div>
 
-                      {/* Hidden inputs: camera (capture="environment") and library (no capture) */}
-                      <input
-                        ref={cameraInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="sr-only"
-                        onChange={handlePhotoChange}
-                      />
-                      <input
-                        ref={libraryInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="sr-only"
-                        onChange={handlePhotoChange}
-                      />
+                        {/* Hidden inputs: camera (capture="environment") and library (no capture) */}
+                        <input
+                          ref={cameraInputRef}
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="sr-only"
+                          onChange={handlePhotoChange}
+                        />
+                        <input
+                          ref={libraryInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={handlePhotoChange}
+                        />
 
-                      {/* Take Photo / Library */}
-                      <div className="flex gap-2.5">
+                        {/* Take Photo / Library */}
+                        <div className="flex gap-2.5">
+                          <button
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="flex-1 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-angler-text font-medium text-[15px] flex items-center justify-center gap-1.5 min-h-[48px] active:scale-[0.99] transition-transform"
+                          >
+                            📷 Take Photo
+                          </button>
+                          <button
+                            onClick={() => libraryInputRef.current?.click()}
+                            className="flex-1 bg-angler-white border border-angler-border rounded-[12px] px-4 py-3 text-angler-text font-medium text-[15px] flex items-center justify-center gap-1.5 min-h-[48px] active:scale-[0.99] transition-transform"
+                          >
+                            🖼 Library
+                          </button>
+                        </div>
+
+                        {/* Submit — "Log this catch →" with photo, "Skip & Log →" without */}
                         <button
-                          onClick={() => cameraInputRef.current?.click()}
-                          className="flex-1 bg-angler-teal-l border-[1.5px] border-angler-teal rounded-[14px] px-4 py-3.5 text-angler-teal font-bold text-[14px] flex items-center justify-center gap-1.5 min-h-[44px] active:scale-[0.99] transition-transform"
+                          onClick={handleSubmit}
+                          disabled={submitting}
+                          className="w-full py-4 rounded-[14px] bg-angler-forest text-white font-semibold text-[16px] transition-opacity disabled:opacity-30 min-h-[56px]"
                         >
-                          <span>📷</span> Take Photo
+                          {submitting
+                            ? 'Saving…'
+                            : formData.photoPreview
+                            ? 'Log this catch →'
+                            : 'Skip & Log →'}
                         </button>
-                        <button
-                          onClick={() => libraryInputRef.current?.click()}
-                          className="flex-1 bg-angler-bg border-[1.5px] border-angler-border rounded-[14px] px-4 py-3.5 text-angler-text2 font-bold text-[14px] flex items-center justify-center gap-1.5 min-h-[44px] active:scale-[0.99] transition-transform"
-                        >
-                          <span>🖼</span> Library
-                        </button>
-                      </div>
-
-                      {/* Submit — Skip & Log (no photo) OR Log Catch (photo attached) */}
-                      <button
-                        onClick={handleSubmit}
-                        disabled={submitting}
-                        className="w-full py-3.5 rounded-[12px] bg-angler-teal text-white font-bold text-[15px] transition-opacity disabled:bg-angler-text3/30 min-h-[44px]"
-                      >
-                        {submitting
-                          ? 'Saving…'
-                          : formData.photoPreview
-                          ? 'Log Catch →'
-                          : 'Skip & Log →'}
-                      </button>
-                    </motion.div>
-                  )}
-
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 )}
 
                 {step === 4 && (
@@ -841,89 +847,89 @@ export function LogCatch() {
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="text-center pt-2"
                   >
-                      {formData.photoPreview ? (
-                        <div className="w-[120px] h-[120px] rounded-full overflow-hidden mx-auto mb-4 border-4 border-angler-teal">
-                          <img
-                            src={formData.photoPreview}
-                            alt="catch"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-[72px] leading-none mb-3">🎣</div>
-                      )}
-                      <h2 className="text-[22px] font-extrabold text-angler-text leading-tight">
-                        {effectiveSpecies}
-                      </h2>
-                      <p className="text-[28px] font-extrabold text-angler-teal mt-1 tabular-nums">
-                        {parseFloat(formData.weight).toFixed(2)} kg
-                      </p>
-                      {formData.length.trim() && (
-                        <p className="text-[13px] text-angler-text3 mt-1 tabular-nums">
-                          {parseFloat(formData.length)} cm
-                        </p>
-                      )}
-
-                      {isPB && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.15 }}
-                          className="mt-4 bg-angler-gold-l border border-angler-gold/40 rounded-[14px] p-3"
-                        >
-                          <p className="text-angler-gold font-extrabold text-[15px]">
-                            🏆 New Personal Best!
-                          </p>
-                          <p className="text-angler-text2 text-[12px] mt-0.5">
-                            Beats your previous best
-                          </p>
-                        </motion.div>
-                      )}
-
-                      {/* Competition assignment — only available once the DB catch exists */}
-                      {liveComps.length > 0 && !formData.competitionId && newCatch && (
-                        <div className="mt-5 bg-angler-white border border-angler-border rounded-[14px] p-4 text-left shadow-card-light">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-2">
-                            Add to competition?
-                          </p>
-                          <select
-                            className="w-full bg-angler-bg2 border border-angler-border rounded-[12px] px-3 py-2.5 text-[14px] text-angler-text focus:outline-none focus:border-angler-teal min-h-[44px] mb-2"
-                            value={assignCompId ?? ''}
-                            onChange={(e) => setAssignCompId(e.target.value || null)}
-                          >
-                            <option value="">Select competition…</option>
-                            {liveComps.map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name}
-                              </option>
-                            ))}
-                          </select>
-                          {assignCompId && (
-                            <button
-                              onClick={handleAssignComp}
-                              disabled={assigningComp}
-                              className="w-full py-3 rounded-[12px] bg-angler-teal text-white font-bold text-[14px] disabled:opacity-50 min-h-[44px]"
-                            >
-                              {assigningComp ? 'Saving…' : 'Add to competition'}
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="mt-6 flex flex-col gap-1">
-                        <button
-                          onClick={close}
-                          className="w-full py-3.5 rounded-[12px] bg-angler-teal text-white font-bold text-[15px] min-h-[44px]"
-                        >
-                          Done
-                        </button>
-                        <button
-                          onClick={resetForNext}
-                          className="py-2.5 text-angler-teal text-[13px] font-semibold min-h-[44px]"
-                        >
-                          Log another catch
-                        </button>
+                    {formData.photoPreview ? (
+                      <div className="w-[120px] h-[120px] rounded-full overflow-hidden mx-auto mb-4 border-4 border-angler-forest">
+                        <img
+                          src={formData.photoPreview}
+                          alt="catch"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
+                    ) : (
+                      <div className="text-[72px] leading-none mb-3">🎣</div>
+                    )}
+                    <h2 className="text-[22px] font-extrabold text-angler-text leading-tight">
+                      {effectiveSpecies}
+                    </h2>
+                    <p className="text-[28px] font-extrabold text-angler-forest mt-1 tabular-nums">
+                      {parseFloat(formData.weight).toFixed(2)} kg
+                    </p>
+                    {formData.length.trim() && (
+                      <p className="text-[13px] text-angler-text3 mt-1 tabular-nums">
+                        {parseFloat(formData.length)} cm
+                      </p>
+                    )}
+
+                    {isPB && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="mt-4 bg-angler-gold-l border border-angler-gold/40 rounded-[14px] p-3"
+                      >
+                        <p className="text-angler-gold font-extrabold text-[15px]">
+                          🏆 New Personal Best!
+                        </p>
+                        <p className="text-angler-text2 text-[12px] mt-0.5">
+                          Beats your previous best
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {/* Competition assignment — only available once the DB catch exists */}
+                    {liveComps.length > 0 && !formData.competitionId && newCatch && (
+                      <div className="mt-5 bg-angler-white border border-angler-border rounded-[14px] p-4 text-left shadow-card-light">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-2">
+                          Add to competition?
+                        </p>
+                        <select
+                          className="w-full bg-angler-bg2 border border-angler-border rounded-[12px] px-3 py-2.5 text-[14px] text-angler-text focus:outline-none focus:border-angler-forest min-h-[44px] mb-2"
+                          value={assignCompId ?? ''}
+                          onChange={(e) => setAssignCompId(e.target.value || null)}
+                        >
+                          <option value="">Select competition…</option>
+                          {liveComps.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                        {assignCompId && (
+                          <button
+                            onClick={handleAssignComp}
+                            disabled={assigningComp}
+                            className="w-full py-3 rounded-[12px] bg-angler-forest text-white font-bold text-[14px] disabled:opacity-50 min-h-[44px]"
+                          >
+                            {assigningComp ? 'Saving…' : 'Add to competition'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-6 flex flex-col gap-1">
+                      <button
+                        onClick={close}
+                        className="w-full py-3.5 rounded-[12px] bg-angler-forest text-white font-bold text-[15px] min-h-[44px]"
+                      >
+                        Done
+                      </button>
+                      <button
+                        onClick={resetForNext}
+                        className="py-2.5 text-angler-forest text-[13px] font-semibold min-h-[44px]"
+                      >
+                        Log another catch
+                      </button>
+                    </div>
                   </motion.div>
                 )}
               </div>
@@ -942,11 +948,11 @@ export function LogCatch() {
               initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -40 }}
-              className="bg-angler-white border border-angler-teal/40 rounded-[14px] p-3 flex items-center gap-3 shadow-elevated-light pointer-events-auto"
+              className="bg-angler-white border border-angler-forest/40 rounded-[14px] p-3 flex items-center gap-3 shadow-elevated-light pointer-events-auto"
             >
               <span className="text-2xl">{toast.icon}</span>
               <div className="flex-1 min-w-0">
-                <p className="font-extrabold text-angler-teal text-[13px] leading-tight">
+                <p className="font-extrabold text-angler-forest text-[13px] leading-tight">
                   🎖 {toast.name} unlocked!
                 </p>
                 <p className="text-angler-text2 text-[11px] leading-tight mt-0.5">

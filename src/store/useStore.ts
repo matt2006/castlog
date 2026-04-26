@@ -23,7 +23,9 @@ interface AppState {
   addCatch: (c: Catch) => void
   removeCatch: (id: string) => void
   setCompetitions: (c: Competition[]) => void
+  addCompetition: (c: Competition) => void
   updateCompetition: (c: Competition) => void
+  removeCompetition: (id: string) => void
   setEarnedAchievements: (a: AchievementEarned[]) => void
   addEarnedAchievement: (a: AchievementEarned) => void
   setVenues: (v: Venue[]) => void
@@ -58,10 +60,13 @@ export const useStore = create<AppState>((set, get) => ({
   addCatch: (c) => set((s) => ({ catches: [c, ...s.catches] })),
   removeCatch: (id) => set((s) => ({ catches: s.catches.filter((c) => c.id !== id) })),
   setCompetitions: (competitions) => set({ competitions }),
+  addCompetition: (c) => set((s) => ({ competitions: [c, ...s.competitions] })),
   updateCompetition: (comp) =>
     set((s) => ({
       competitions: s.competitions.map((c) => (c.id === comp.id ? comp : c)),
     })),
+  removeCompetition: (id) =>
+    set((s) => ({ competitions: s.competitions.filter((c) => c.id !== id) })),
   setEarnedAchievements: (earnedAchievements) => set({ earnedAchievements }),
   addEarnedAchievement: (a) =>
     set((s) => ({ earnedAchievements: [...s.earnedAchievements, a] })),

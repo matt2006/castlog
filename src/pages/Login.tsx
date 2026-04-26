@@ -11,18 +11,16 @@ export function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Keep auth loading on admin-dark to prevent flash-of-white before redirect.
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-admin-bg flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-admin-teal border-t-transparent rounded-full animate-spin" />
+      <div data-theme="angler" className="min-h-screen bg-angler-white flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-angler-teal border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   if (session && profile) {
     if (profile.force_password_change) return <Navigate to="/change-password" replace />
-    if (profile.role === 'admin') return <Navigate to="/admin" replace />
     return <Navigate to="/" replace />
   }
 

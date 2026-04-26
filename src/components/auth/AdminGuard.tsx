@@ -6,8 +6,8 @@ export function AdminGuard() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-admin-bg flex items-center justify-center font-sans">
-        <div className="w-12 h-12 border-2 border-admin-teal border-t-transparent rounded-full animate-spin" />
+      <div data-theme="angler" className="min-h-screen bg-angler-white flex items-center justify-center font-sans">
+        <div className="w-12 h-12 border-2 border-angler-teal border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

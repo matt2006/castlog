@@ -216,8 +216,19 @@ export function Home() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.12 }}
-                className="absolute right-0 top-full mt-1 w-36 bg-angler-white border border-angler-border rounded-xl shadow-elevated-light overflow-hidden z-50"
+                className="absolute right-0 top-full mt-1 w-44 bg-angler-white border border-angler-border rounded-xl shadow-elevated-light overflow-hidden z-50"
               >
+                {profile.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false)
+                      navigate('/settings')
+                    }}
+                    className="w-full px-4 py-3 text-left text-angler-text hover:bg-angler-bg2 text-sm font-medium transition-colors min-h-[44px] flex items-center gap-2 border-b border-angler-border"
+                  >
+                    <span className="text-base">⚙️</span> Admin Settings
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setShowDropdown(false)

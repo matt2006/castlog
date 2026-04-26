@@ -19,6 +19,7 @@ import { AdminCatches } from '@/pages/admin/AdminCatches'
 import { AdminAchievements } from '@/pages/admin/AdminAchievements'
 import { AdminVenues } from '@/pages/admin/AdminVenues'
 import { VenueDirectory } from '@/pages/angler/VenueDirectory'
+import { Settings } from '@/pages/angler/Settings'
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/species" element={<SpeciesGuide />} />
           <Route path="/map" element={<CatchMap />} />
           <Route path="/venues" element={<VenueDirectory />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Route>
 

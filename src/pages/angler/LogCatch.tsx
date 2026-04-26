@@ -174,53 +174,45 @@ export function LogCatch() {
     if (!profile) return
     setSubmitting(true)
 
-    // Online: upload immediately. Offline: stash a compressed base64 copy so
-    // replayOfflineQueue can upload it on reconnect.
-    let photoUrl: string | null = null
-    let photoBase64: string | null = null
-    if (formData.photoFile) {
-      if (isOnline) {
-        photoUrl = await uploadCatchPhoto(formData.photoFile, profile.id)
-      } else {
-        const compressed = await compressImageToBlob(formData.photoFile, 800)
-        photoBase64 = await blobToBase64(compressed)
-      }
-    }
-
-    const species = formData.customSpecies.trim() || formData.species
-    const weight = parseFloat(formData.weight)
-    const parsedLen = formData.length.trim() ? parseFloat(formData.length) : NaN
-    const length_cm = Number.isFinite(parsedLen) ? parsedLen : null
-
-    const catchData = {
-      angler_id: profile.id,
-      species,
-      weight_kg: weight,
-      length_cm,
-      method: formData.method ?? null,
-      location_name: formData.locationName.trim() || null,
-      latitude: formData.latitude,
-      longitude: formData.longitude,
-      photo_url: photoUrl,
-      weather_snapshot: formData.weather,
-      competition_id: formData.competitionId,
-    }
-
-    const prevPB = catches.length > 0 ? Math.max(...catches.map((c) => c.weight_kg)) : 0
-    const isNewPB = weight > prevPB
-
     let savedCatch: Catch | null = null
 
-    if (isOnline) {
-      const { data, error } = await supabase
-        .from('catches')
-        .insert(catchData)
-        .select('*, profiles(username, avatar_emoji, avatar_color)')
-        .single()
-      if (error) console.error('[handleSubmit] catch insert failed:', error.message)
-      // Fall back to a locally-constructed catch if the join select fails so
-      // step 4 always has a catch to display.
-      savedCatch = (data as Catch | null) ?? {
+    try {
+      // Online: upload immediately. Offline: stash a compressed base64 copy so
+      // replayOfflineQueue can upload it on reconnect.
+      let photoUrl: string | null = null
+      let photoBase64: string | null = null
+      if (formData.photoFile) {
+        if (isOnline) {
+          photoUrl = await uploadCatchPhoto(formData.photoFile, profile.id)
+        } else {
+          const compressed = await compressImageToBlob(formData.photoFile, 800)
+          photoBase64 = await blobToBase64(compressed)
+        }
+      }
+
+      const species = formData.customSpecies.trim() || formData.species
+      const weight = parseFloat(formData.weight)
+      const parsedLen = formData.length.trim() ? parseFloat(formData.length) : NaN
+      const length_cm = Number.isFinite(parsedLen) ? parsedLen : null
+
+      const catchData = {
+        angler_id: profile.id,
+        species,
+        weight_kg: weight,
+        length_cm,
+        method: formData.method ?? null,
+        location_name: formData.locationName.trim() || null,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+        photo_url: photoUrl,
+        weather_snapshot: formData.weather,
+        competition_id: formData.competitionId,
+      }
+
+      const prevPB = catches.length > 0 ? Math.max(...catches.map((c) => c.weight_kg)) : 0
+      const isNewPB = weight > prevPB
+
+      const fallbackCatch = (): Catch => ({
         id: crypto.randomUUID(),
         ...catchData,
         timestamp: new Date().toISOString(),
@@ -229,65 +221,79 @@ export function LogCatch() {
           avatar_emoji: profile.avatar_emoji,
           avatar_color: profile.avatar_color,
         },
-      }
-      addCatch(savedCatch)
-    } else {
-      const id = crypto.randomUUID()
-      const offlineItem = {
-        id,
-        data: catchData,
-        photo_base64: photoBase64,
-        timestamp: new Date().toISOString(),
-      }
-      await queueOfflineCatch(offlineItem)
-      addOfflineItem(offlineItem)
-      savedCatch = {
-        id,
-        ...catchData,
-        timestamp: new Date().toISOString(),
-        profiles: {
+      })
+
+      if (isOnline) {
+        try {
+          const { data, error } = await supabase
+            .from('catches')
+            .insert(catchData)
+            .select('*, profiles(username, avatar_emoji, avatar_color)')
+            .single()
+          if (error) console.error('[handleSubmit] catch insert failed:', error.message)
+          savedCatch = (data as Catch | null) ?? fallbackCatch()
+        } catch (err) {
+          console.error('[handleSubmit] insert threw:', err)
+          savedCatch = fallbackCatch()
+        }
+        addCatch(savedCatch)
+      } else {
+        const id = crypto.randomUUID()
+        const offlineItem = {
+          id,
+          data: catchData,
+          photo_base64: photoBase64,
+          timestamp: new Date().toISOString(),
+        }
+        await queueOfflineCatch(offlineItem)
+        addOfflineItem(offlineItem)
+        savedCatch = { id, ...catchData, timestamp: new Date().toISOString(), profiles: {
           username: profile.username,
           avatar_emoji: profile.avatar_emoji,
           avatar_color: profile.avatar_color,
-        },
+        }}
+        addCatch(savedCatch)
       }
-    }
 
-    // Achievements
-    const earnedIds = earnedAchievements.map((a) => a.achievement_id)
-    const allCatches = savedCatch ? [savedCatch, ...catches] : catches
-    const newAchievements = checkNewAchievements(allCatches, earnedIds)
-    for (const ach of newAchievements) {
-      if (isOnline) {
-        const { data } = await supabase
-          .from('achievements_earned')
-          .insert({ angler_id: profile.id, achievement_id: ach.id })
-          .select()
-          .single()
-        if (data) addEarnedAchievement(data)
+      // Achievements — wrapped so a duplicate-insert or any other error here
+      // never prevents step 4 from rendering.
+      try {
+        const earnedIds = earnedAchievements.map((a) => a.achievement_id)
+        const allCatches = [savedCatch, ...catches]
+        const newAchievements = checkNewAchievements(allCatches, earnedIds)
+        for (const ach of newAchievements) {
+          if (isOnline) {
+            const { data } = await supabase
+              .from('achievements_earned')
+              .insert({ angler_id: profile.id, achievement_id: ach.id })
+              .select()
+              .single()
+            if (data) addEarnedAchievement(data)
+          }
+          setAchievementToasts((prev) => [
+            ...prev,
+            { id: ach.id, name: ach.name, description: ach.description, icon: ach.icon, rarity: ach.rarity },
+          ])
+        }
+      } catch (err) {
+        console.error('[handleSubmit] achievements error:', err)
       }
-      setAchievementToasts((prev) => [
-        ...prev,
-        {
-          id: ach.id,
-          name: ach.name,
-          description: ach.description,
-          icon: ach.icon,
-          rarity: ach.rarity,
-        },
-      ])
+
+      navigator.vibrate?.(200)
+
+      if (isNewPB) {
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } })
+        setIsPB(true)
+      }
+    } catch (err) {
+      console.error('[handleSubmit] unexpected error:', err)
+    } finally {
+      // Always advance to step 4 so the sheet never gets stuck on "Saving…"
+      // and the backdrop never permanently blocks the nav.
+      setNewCatch(savedCatch)
+      setSubmitting(false)
+      setStep(4)
     }
-
-    navigator.vibrate?.(200)
-
-    if (isNewPB) {
-      confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } })
-      setIsPB(true)
-    }
-
-    setNewCatch(savedCatch)
-    setSubmitting(false)
-    setStep(4)
   }
 
   useEffect(() => {
@@ -800,7 +806,7 @@ export function LogCatch() {
                     </motion.div>
                   )}
 
-                  {step === 4 && newCatch && (
+                  {step === 4 && (
                     <motion.div
                       key="step4"
                       initial={{ opacity: 0, y: 12 }}
@@ -821,14 +827,14 @@ export function LogCatch() {
                         <div className="text-[72px] leading-none mb-3">🎣</div>
                       )}
                       <h2 className="text-[22px] font-extrabold text-angler-text leading-tight">
-                        {newCatch.species}
+                        {effectiveSpecies}
                       </h2>
                       <p className="text-[28px] font-extrabold text-angler-teal mt-1 tabular-nums">
-                        {newCatch.weight_kg.toFixed(2)} kg
+                        {parseFloat(formData.weight).toFixed(2)} kg
                       </p>
-                      {newCatch.length_cm !== null && (
+                      {formData.length.trim() && (
                         <p className="text-[13px] text-angler-text3 mt-1 tabular-nums">
-                          {newCatch.length_cm} cm
+                          {parseFloat(formData.length)} cm
                         </p>
                       )}
 
@@ -848,7 +854,8 @@ export function LogCatch() {
                         </motion.div>
                       )}
 
-                      {liveComps.length > 0 && !newCatch.competition_id && (
+                      {/* Competition assignment — only available once the DB catch exists */}
+                      {liveComps.length > 0 && !formData.competitionId && newCatch && (
                         <div className="mt-5 bg-angler-white border border-angler-border rounded-[14px] p-4 text-left shadow-card-light">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-angler-text2 mb-2">
                             Add to competition?

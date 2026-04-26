@@ -98,63 +98,29 @@ export function LogCatch() {
   const update = (patch: Partial<FormData>) =>
     setFormData((prev) => ({ ...prev, ...patch }))
 
-  // Lock body scroll while sheet is open. Scoped to isOpen so the cleanup
-  // runs the moment close() sets isOpen=false — not just on component unmount.
-  // Previously this was [], which meant the lock survived a hung exit animation.
+  // Lock body scroll while the sheet is open.
+  // Scoped to isOpen: cleanup fires the moment close() flips isOpen false,
+  // not just when LogCatch unmounts — so the lock never outlives the sheet.
   useEffect(() => {
     if (!isOpen) return
-    const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = prev
+      document.body.style.overflow = ''
     }
   }, [isOpen])
 
-  // ── DIAGNOSTIC: watch step changes ──────────────────────────────────────
-  useEffect(() => {
-    console.log('[LogCatch] step_changed_to', step)
-  }, [step])
-
-  // ── DIAGNOSTIC: watch isOpen changes ────────────────────────────────────
-  useEffect(() => {
-    console.log('[LogCatch] isOpen_changed_to', isOpen)
-  }, [isOpen])
-
-  // ── DIAGNOSTIC: unmount ──────────────────────────────────────────────────
-  useEffect(() => {
-    return () => {
-      console.log('[LogCatch] UNMOUNTING — step at unmount time captured in closure')
-    }
-  }, [])
-
-  // stepRef lets the unmount log see the current step without stale closure
-  const stepRef = useRef(step)
-  useEffect(() => { stepRef.current = step }, [step])
-  useEffect(() => {
-    return () => {
-      console.log('[LogCatch] UNMOUNTING — stepRef.current =', stepRef.current)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
+  // Navigate immediately when closing — do NOT rely on AnimatePresence
+  // onExitComplete. The sheet's exit spring never reliably signalled completion
+  // on mobile under post-submit load, leaving a z-50 opacity:0 backdrop zombie
+  // that blocked all taps. Navigating here unmounts the component, which removes
+  // the entire sheet from the DOM regardless of animation state.
   const close = () => {
-    console.trace('[LogCatch] close_called — isOpen:', isOpen, 'step:', stepRef.current)
     setIsOpen(false)
-    // Navigate immediately — do NOT wait for onExitComplete.
-    // The sheet exit spring was never reliably calling onExitComplete on mobile
-    // (post-submit frame drops cause the spring completion signal to stall,
-    // leaving the backdrop mounted at z-50 opacity:0 blocking all taps forever).
     if (location.key === 'default') {
       navigate('/', { replace: true })
     } else {
       navigate(-1)
     }
-  }
-
-  // onSheetClosed kept as a no-op log so we can confirm whether AnimatePresence
-  // onExitComplete ever fires (diagnostic only — navigation no longer depends on it).
-  const onSheetClosed = () => {
-    console.log('[LogCatch] onSheetClosed (onExitComplete) fired — navigation already done by close()')
   }
 
   const filteredSpecies = useMemo(() => {
@@ -210,18 +176,6 @@ export function LogCatch() {
 
   async function handleSubmit() {
     if (!profile) return
-
-    // ── DIAGNOSTIC ────────────────────────────────────────────────────────
-    console.log('[LogCatch] submit_start', {
-      step,
-      species: formData.customSpecies.trim() || formData.species,
-      weight: formData.weight,
-      has_photo: !!formData.photoFile,
-      has_competition: !!formData.competitionId,
-      isOnline,
-    })
-    // ─────────────────────────────────────────────────────────────────────
-
     setSubmitting(true)
 
     let savedCatch: Catch | null = null
@@ -233,9 +187,7 @@ export function LogCatch() {
       let photoBase64: string | null = null
       if (formData.photoFile) {
         if (isOnline) {
-          console.log('[LogCatch] photo_upload_start')
           photoUrl = await uploadCatchPhoto(formData.photoFile, profile.id)
-          console.log('[LogCatch] photo_upload_done — url:', photoUrl)
         } else {
           const compressed = await compressImageToBlob(formData.photoFile, 800)
           photoBase64 = await blobToBase64(compressed)
@@ -277,20 +229,15 @@ export function LogCatch() {
 
       if (isOnline) {
         try {
-          console.log('[LogCatch] insert_start', catchData)
           const { data, error } = await supabase
             .from('catches')
             .insert(catchData)
             .select('*, profiles(username, avatar_emoji, avatar_color)')
             .single()
-          if (error) {
-            console.error('[LogCatch] insert_error', error)
-          } else {
-            console.log('[LogCatch] insert_done — row:', data)
-          }
+          if (error) console.error('[LogCatch] insert error:', error.message)
           savedCatch = (data as Catch | null) ?? fallbackCatch()
         } catch (err) {
-          console.error('[LogCatch] insert_threw', err)
+          console.error('[LogCatch] insert threw:', err)
           savedCatch = fallbackCatch()
         }
         addCatch(savedCatch)
@@ -312,22 +259,18 @@ export function LogCatch() {
         addCatch(savedCatch)
       }
 
-      // Achievements — wrapped so a duplicate-insert or any other error here
-      // never prevents step 4 from rendering.
+      // Achievements — isolated so a duplicate-insert or any DB error never
+      // prevents step 4 from rendering.
       try {
         const earnedIds = earnedAchievements.map((a) => a.achievement_id)
-        const allCatches = [savedCatch, ...catches]
-        const newAchievements = checkNewAchievements(allCatches, earnedIds)
-        console.log('[LogCatch] achievements_start — newAchievements:', newAchievements.length)
+        const newAchievements = checkNewAchievements([savedCatch, ...catches], earnedIds)
         for (const ach of newAchievements) {
-          console.log('[LogCatch] achievement_processing — id:', ach.id)
           if (isOnline) {
-            const { data, error } = await supabase
+            const { data } = await supabase
               .from('achievements_earned')
               .insert({ angler_id: profile.id, achievement_id: ach.id })
               .select()
               .single()
-            console.log('[LogCatch] achievement_insert_result — data:', data, 'error:', error)
             if (data) addEarnedAchievement(data)
           }
           setAchievementToasts((prev) => [
@@ -335,9 +278,8 @@ export function LogCatch() {
             { id: ach.id, name: ach.name, description: ach.description, icon: ach.icon, rarity: ach.rarity },
           ])
         }
-        console.log('[LogCatch] achievements_done')
       } catch (err) {
-        console.error('[LogCatch] achievements_error', err)
+        console.error('[LogCatch] achievements error:', err)
       }
 
       navigator.vibrate?.(200)
@@ -347,12 +289,11 @@ export function LogCatch() {
         setIsPB(true)
       }
     } catch (err) {
-      console.error('[LogCatch] submit_caught_error — unexpected throw in outer try:', err)
+      console.error('[LogCatch] unexpected submit error:', err)
     } finally {
-      console.log('[LogCatch] submit_finally — about to setStep(4), current step via ref:', stepRef.current, 'isOpen:', isOpen)
+      // Always advance to step 4 — sheet never gets stuck on "Saving…".
       setNewCatch(savedCatch)
       setSubmitting(false)
-      console.log('[LogCatch] set_step_4_called')
       setStep(4)
     }
   }
@@ -396,7 +337,7 @@ export function LogCatch() {
 
   return (
     <>
-      <AnimatePresence onExitComplete={onSheetClosed}>
+      <AnimatePresence>
         {isOpen && (
           <motion.div
             key="backdrop"
@@ -412,7 +353,7 @@ export function LogCatch() {
               data-theme="angler"
               initial={{ y: '100%' }}
               animate={{ y: 0, transition: { type: 'spring', stiffness: 280, damping: 32, mass: 0.9 } }}
-              exit={{ y: '100%', transition: { duration: 0.25, ease: [0.32, 0, 0.67, 0] } }}
+              exit={{ y: '100%', transition: { duration: 0.22, ease: 'easeOut' } }}
               onClick={(e) => e.stopPropagation()}
               className="absolute left-0 right-0 bottom-0 bg-angler-bg rounded-t-[24px] shadow-sheet max-h-[92vh] flex flex-col font-sans"
             >
